@@ -47,7 +47,7 @@
  *
  * Build using: 'gcc -o rptrctrl rptrctrl.c  -l bcm2835 -lrt'
  *  - or -
- *  use the handy 'build' script
+ * just type 'make'
  *
  * NOTE: This application must be run as root to have permissions to
  * modify the GPIO pins.

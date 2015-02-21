@@ -15,7 +15,7 @@ Build this project using:
   
 			- or -
 
-             use the handy 'build.sh' script
+                  just type 'make'
  
   * NOTE: This application must be run as root in order to have permissions 
     to modify the GPIO pins.  'sudo ./rptctrl'
