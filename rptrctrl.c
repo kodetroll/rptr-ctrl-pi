@@ -52,6 +52,9 @@
  * NOTE: This application must be run as root to have permissions to
  * modify the GPIO pins.
  *
+ * The bcm2835 gpio library from Mike McCauley is required to build this
+ * application. It can be found here:
+ * http://www.airspayce.com/mikem/bcm2835/bcm2835-1.38.tar.gz
  */
 #include <stdio.h>
 #include <stdlib.h>
