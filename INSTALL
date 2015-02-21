@@ -1,0 +1,13 @@
+
+  Build this project using: 
+	'gcc -o rptrctrl rptrctrl.c -l bcm2835 -lrt'
+  
+			- or -
+
+  use the handy 'build.sh' script
+ 
+  NOTE: This application must be run as root in order to have permissions 
+  to modify the GPIO pins.
+
+  'sudo ./rptctrl'
+
