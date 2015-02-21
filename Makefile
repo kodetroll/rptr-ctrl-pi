@@ -1,6 +1,6 @@
 ####################################################################
 # 
-# Makefile for rptr-ctrl-pi.c - A minimalist repeater controller 
+# Makefile for rptr-ctrl-pi - A minimalist repeater controller 
 # program written in C for the Raspberry PI. Based on an Arduino
 # sketch. Requries the bcm2835 gpio libs. 
 #
