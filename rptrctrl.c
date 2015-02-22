@@ -69,6 +69,15 @@ typedef struct
     int version;
     const char* name;
     const char* email;
+    const char* callsign;
+    const char* corsense;
+    const char* pttsense;
+    const char* cwidspeed;
+    const char* cwidfreq;
+    const char* beeptype;
+    const char* beepfreq1;
+    const char* beepfreq2;
+    const char* beeptime;
 } configuration;
 
 
@@ -915,14 +924,31 @@ static int handler(void* user, const char* section, const char* name,
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("protocol", "version")) {
         pconfig->version = atoi(value);
-    } else if (MATCH("user", "name")) {
+    } else if (MATCH("USER", "name")) {
         pconfig->name = strdup(value);
     } else if (MATCH("user", "email")) {
         pconfig->email = strdup(value);
+    } else if (MATCH("CWID", "Callsign")) {
+        pconfig->callsign = strdup(value);
+    } else if (MATCH("TONES", "CWIDFreq")) {
+        pconfig->cwidfreq = strdup(value);
+    } else if (MATCH("TONES", "CBEEPtype")) {
+        pconfig->beeptype = strdup(value);
+    } else if (MATCH("TONES", "CBEEPFreq1")) {
+        pconfig->beepfreq1 = strdup(value);
+    } else if (MATCH("TONES", "CBEEPFreq2")) {
+        pconfig->beepfreq2 = strdup(value);
+    } else if (MATCH("TONES", "CBEEPTimeDuration")) {
+        pconfig->beeptime = strdup(value);
+    } else if (MATCH("TONES", "CWIDClockTime")) {
+        pconfig->cwidspeed = strdup(value);
+    } else if (MATCH("CONTROL", "CORSense")) {
+        pconfig->corsense = strdup(value);
+    } else if (MATCH("CONTROL", "PTTSense")) {
+        pconfig->pttsense = strdup(value);
     } else {
         return 0;  /* unknown section/name, error */
     }
-    return 1;
 }
 
 int LoadConfig(char * cfile) {
@@ -935,8 +961,20 @@ int LoadConfig(char * cfile) {
         printf("Can't load '%s'\n",cfile);
         return (0);
     }
-    printf("Config loaded from '%s': version=%d, name=%s, email=%s\n",
-        cfile,config.version, config.name, config.email);
+    printf("Config loaded from '%s'\n",cfile);
+    
+    printf("version: %d\n", config.version); 
+    printf("name: '%s'\n", config.name); 
+    printf("email: '%s'\n", config.email);
+    printf("callsign: '%s'\n", config.callsign);
+    printf("corsense: '%s'\n", config.corsense);
+    printf("pttsense: '%s'\n", config.pttsense);
+    printf("cwidfreq: '%s'\n", config.cwidfreq);
+    printf("beeptype: '%s'\n", config.beeptype);
+    printf("beepfreq1: '%s'\n", config.beepfreq1);
+    printf("beepfreq2: '%s'\n", config.beepfreq2);
+    printf("beeptime: '%s'\n", config.beeptime);
+    printf("cwidspeed: '%s'\n", config.cwidspeed);
 
 	return (1);
 }
