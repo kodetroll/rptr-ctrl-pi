@@ -1,4 +1,3 @@
-
 /* rptrctrl.c - A program to do a 'minimalist' repeater controller
  * using a Raspberry PI and simple interfacing circuitry on the
  * GPIO Port.
@@ -157,9 +156,12 @@ int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
 // e.g. N0S would be 3,1,0,3,3,3,3,3,0,3,3,3,0
 // Put your call here, then count the number of elements and set
 // NumElements below
-int Elements[] = {
-  3,1,3,0,3,1,1,1,0,1,1,1,1,3,0,3,3,3,0,1,1,0,3,1,1,0,3,3,1,1,3,3,0,1,3,1
-};
+int Elements[200];
+//int Elements[] = {
+//  3,1,3,0,3,1,1,1,0,1,1,1,1,3,0,3,3,3,0,1,1,0,3,1,1,0,3,3,1,1,3,3,0,1,3,1
+//};
+
+char Callsign[30];
 
 // Here's where we define some of the CW ID characteristics
 int NumElements = 36;     // This is the number of elements in the ID
@@ -456,6 +458,7 @@ void Show_Start_Info(void)
 	printf("CW ID Speed: %d mS\n",CW_TIMEBASE);
 	printf("BeepDuration: %d mS\n",BeepDuration);
 	printf("NumElements: %d\n",NumElements);
+	printf("CallSign: '%s'\n",Callsign);
 }
 
 void setCOR_Sense(int Sense) {
@@ -479,6 +482,173 @@ void setPTT_Sense(int Sense) {
 	}
 }	
 
+char* cvt2morse(char c) {
+	switch(c)
+	{
+		case 'A':
+		case 'a':
+			return("130");
+			break;
+		case 'B':
+		case 'b':
+			return("31110");
+			break;
+		case 'C':
+		case 'c':
+			return("31310");
+			break;
+		case 'D':
+		case 'd':
+			return("3110");
+			break;
+		case 'E':
+		case 'e':
+			return("10");
+			break;
+		case 'F':
+		case 'f':
+			return("11310");
+			break;
+		case 'G':
+		case 'g':
+			return("3310");
+			break;
+		case 'H':
+		case 'h':
+			return("11110");
+			break;
+		case 'I':
+		case 'i':
+			return("110");
+			break;
+		case 'J':
+		case 'j':
+			return("13330");
+			break;
+		case 'K':
+		case 'k':
+			return("3130");
+			break;
+		case 'L':
+		case 'l':
+			return("13110");
+			break;
+		case 'M':
+		case 'm':
+			return("330");
+			break;
+		case 'N':
+		case 'n':
+			return("310");
+			break;
+		case 'O':
+		case 'o':
+			return("3330");
+			break;
+		case 'P':
+		case 'p':
+			return("13310");
+			break;
+		case 'Q':
+		case 'q':
+			return("33130");
+			break;
+		case 'R':
+		case 'r':
+			return("1310");
+			break;
+		case 'S':
+		case 's':
+			return("1110");
+			break;
+		case 'T':
+		case 't':
+			return("30");
+			break;
+		case 'U':
+		case 'u':
+			return("1130");
+			break;
+		case 'V':
+		case 'v':
+			return("11130");
+			break;
+		case 'W':
+		case 'w':
+			return("1330");
+			break;
+		case 'X':
+		case 'x':
+			return("31130");
+			break;
+		case 'Y':
+		case 'y':
+			return("31330");
+			break;
+		case 'Z':
+		case 'z':
+			return("33110");
+			break;
+		case '0':
+			return("333330");
+			break;
+		case '1':
+			return("133330");
+			break;
+		case '2':
+			return("113330");
+			break;
+		case '3':
+			return("111330");
+			break;
+		case '4':
+			return("111130");
+			break;
+		case '5':
+			return("111110");
+			break;
+		case '6':
+			return("311110");
+			break;
+		case '7':
+			return("331110");
+			break;
+		case '8':
+			return("333110");
+			break;
+		case '9':
+			return("333310");
+			break;
+		default:
+			return("0");
+			break;
+	}
+}
+
+int ConvertCall(char * call) {
+	int i;
+	char * l;
+	memset(l,0x00,sizeof(l));
+	
+	printf("call: '%s'\n",call);
+	for (i=0;i<strlen(call);i++) {
+		strcat(l,cvt2morse(call[i]);
+	}
+	printf("l: '%s'\n",l);
+	for (i=0;i<sizeof(Elements);i++) {
+		Elements[i] = 0;
+	}
+	for (i=0;i<strlen(l);i++) {
+		Elements[i] = atoi(l[i]);
+	}
+	printf("Elements: ");
+	for (i=0;i<strlen(l);i++) {
+		printf("%d,",Elements[i]);
+	}
+	printf("\n");
+	
+}
+
 /* One time startup init loop */
 void setup() {
 	
@@ -487,6 +657,10 @@ void setup() {
 	
 	// Determine the size of the Elements array
 	NumElements = sizeof(Elements)/SIZE_OF_INT;
+	printf("NumElements: %d\n",NumElements);
+	
+	NumElements = ConvertCall(Callsign);
+	printf("NumElements: %d\n",NumElements);
 
 	// Get a current tick timer value
 	ticks = now();
@@ -722,8 +896,8 @@ int main(int argc, char **argv)
 {
 	char * cfgFile;
 	
+	strcpy(Callsign,"KB4OID");
 	
-
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
 	pCOR_Value = COR_Value;
@@ -755,4 +929,3 @@ int main(int argc, char **argv)
 		loop();
 	}
 }
-
