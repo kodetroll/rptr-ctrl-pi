@@ -101,6 +101,7 @@ the application must be recompiled.
 You can specify 5 different types of courtesy beep (CBEEP) by changing
 the value of the CBEEP_TYPE compiler define . The possible values are:
 are:
+
 | Type | Description |
 | ---- | ----------- |
 | CBEEP_NONE | No CBEEP |
