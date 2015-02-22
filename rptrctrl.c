@@ -1,3 +1,4 @@
+
 /* rptrctrl.c - A program to do a 'minimalist' repeater controller
  * using a Raspberry PI and simple interfacing circuitry on the
  * GPIO Port.
@@ -156,13 +157,14 @@ int Elements[] = {
 // Here's where we define some of the CW ID characteristics
 int NumElements = 36;     // This is the number of elements in the ID
 int ID_tone = 1200;       // Audio frequency of CW ID
+int BEEP_type = CBEEP_SINGLE;    // Courtesy Beep Type
 int BEEP_tone1 = 1000;    // Audio frequency of Courtesy Beep 1
 int BEEP_tone2 = 800;     // Audio frequency of Courtesy Beep 2
 int BeepDuration = 2;     // Courtesy Tone length (in CWID increments)
 int CW_TIMEBASE = 50;     // CW ID Speed (This is a delay in mS)
 // (50 is about 20wpm)
 
-#define CBEEP_TYPE  CBEEP_SINGLE
+//#define CBEEP_TYPE  CBEEP_SINGLE
 
 // Timer definitions
 time_t ticks;            // Current elapsed time in seconds
@@ -287,7 +289,7 @@ void do_cbeep(void) {
   // Calculate the Courtesy Tone duration
   int BeepDelay = BeepDuration * CW_TIMEBASE;
 
-  switch(CBEEP_TYPE)
+  switch(BEEP_type)
   {
     case CBEEP_NONE:
       break;
