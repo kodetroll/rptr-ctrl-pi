@@ -140,10 +140,10 @@ enum BeepTypes {
 };
 
 // This is where we define what DIO PINs map to what functions
-int PTT = 17;		// DIO Pin number for the PTT out - 9
-int COR = 18;		// DIO Pin number for the COR in - 12
-int CORLED = 22;	// DIO Pin number for the COR indicator LED - 11
-int ID_PIN = 21;	// DIO Pin for the ID Audio output tone
+int PTT_PIN = 17;		// DIO Pin number for the PTT out - 17
+int COR_PIN = 18;		// DIO Pin number for the COR in - 18
+int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
+int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
 
 // 17.21.22
 // This is where the callsign is mapped in dah/dit/spaces
@@ -181,9 +181,9 @@ int rptrState = 0;  // current state
 int prevState = 0;  // previous state
 
 // various DIO pin states
-int CORValue;  // current COR value (was bool)
-int pCORValue; // previous COR value (was bool)
-int PTTValue;  // current PTT state (was bool)
+int COR_Value;  // current COR value (was bool)
+int pCOR_Value; // previous COR value (was bool)
+int PTT_Value;  // current PTT state (was bool)
 
 int Need_ID;   // Whether on not we need to ID (was bool)
 
@@ -332,8 +332,8 @@ void do_ID() {
     return;
 
   // We turn on the PTT output
-  PTTValue = PTT_ON;
-  digitalWrite(PTT, PTTValue);
+  PTT_Value = PTT_ON;
+  digitalWrite(PTT_PIN, PTT_Value);
 
   // wait 200 mS
   delay(ID_PTT_DELAY);
@@ -371,8 +371,8 @@ void do_ID() {
   delay(ID_PTT_HANG);
 
   // Turn off the PTT
-  PTTValue = PTT_OFF;
-  digitalWrite(PTT, PTTValue);
+  PTT_Value = PTT_OFF;
+  digitalWrite(PTT_PIN, PTT_Value);
 
   // reset the ID timer
   reset_id_timer();
@@ -384,7 +384,7 @@ void do_ID() {
  * to the serial port. For debuggin purposes only.
  */
 void show_state_info() {
-  printf ("t: %d:state:%d,%d,%d:C:%d,%d:P:%d\n",now(),prevState, rptrState,nextState,CORValue,pCORValue,PTTValue);
+  printf ("t: %d:state:%d,%d,%d:C:%d,%d:P:%d\n",now(),prevState, rptrState,nextState,COR_Value,pCOR_Value,PTT_Value);
 }
 
 /* Startup info */
@@ -416,16 +416,16 @@ void setup() {
   rptrState = CS_START;
 
   // setup the DIO pins for the right modes
-  pinMode(PTT, OUTPUT);
-  pinMode(COR, INPUT);
-  pinMode(CORLED, OUTPUT);
+  pinMode(PTT_PIN, OUTPUT);
+  pinMode(COR_PIN, INPUT);
+  pinMode(COR_LED, OUTPUT);
 
   // make sure we start with PTT off
-  digitalWrite(PTT, PTT_OFF);
+  digitalWrite(PTT_PIN, PTT_OFF);
 
   // Get current values for COR
-  CORValue = digitalRead(COR);
-  pCORValue = CORValue;
+  COR_Value = digitalRead(COR_PIN);
+  pCOR_Value = COR_Value;
 
   // Here is the first state we jump to
   rptrState = CS_IDLE;
@@ -438,12 +438,12 @@ void setup() {
 
 void get_cor() {
   // Read the COR input and store it in a global
-  CORValue = digitalRead(COR);
+  COR_Value = digitalRead(COR_PIN);
   // lite the external COR indicator LED
-  if (CORValue == COR_ON)
-    digitalWrite(CORLED,HIGH);
+  if (COR_Value == COR_ON)
+    digitalWrite(COR_LED,HIGH);
   else
-    digitalWrite(CORLED,LOW);
+    digitalWrite(COR_LED,LOW);
 }
 
 void show_msg(char * buf) {
@@ -459,9 +459,9 @@ void loop1() {
   // grab the current COR value
   get_cor();
 
-  printf("CORValue[%d]: %d\n",ticks,CORValue);
+  printf("COR_Value[%d]: %d\n",ticks,COR_Value);
 
-//  if (CORValue == COR_ON) {
+//  if (COR_Value == COR_ON) {
 //    printf("COR ON\n");
 //  else
 //    printf("COR OFF\n");
@@ -492,13 +492,13 @@ void loop() {
         show_msg("IDLE");
 	
       prevState = rptrState;
-      if (CORValue == COR_ON) {
-        pCORValue = CORValue;
+      if (COR_Value == COR_ON) {
+        pCOR_Value = COR_Value;
         rptrState = CS_DEBOUNCE_COR_ON;
       }
 
       // look for ID timer expiry
-      if (ticks > IDTimer && Need_ID)
+      if ((ticks > IDTimer) && Need_ID)
         rptrState = CS_ID;
 
       break;
@@ -506,10 +506,10 @@ void loop() {
     case CS_DEBOUNCE_COR_ON:
       prevState = rptrState;
       // ideally we will delay here a little while and test
-      // the current value (after the delay) with the pCORValue
+      // the current value (after the delay) with the pCOR_Value
       // to prove its not a flake
       delay(COR_DEBOUNCE_DELAY);
-      if ( pCORValue != digitalRead(COR)) {
+      if ( pCOR_Value != digitalRead(COR_PIN)) {
         rptrState = CS_IDLE;  // FLAKE - bail back to IDLE
       } else {
         nextState = CS_PTT;    // where we will go after PTT_ON
@@ -521,8 +521,8 @@ void loop() {
     case CS_PTT_ON:
       prevState = rptrState;
       // turn on PTT
-      PTTValue = PTT_ON;
-      digitalWrite(PTT, PTTValue);
+      PTT_Value = PTT_ON;
+      digitalWrite(PTT_PIN, PTT_Value);
       // jump to the desired next state (set by the previous state)
       rptrState = nextState;
       show_msg("PTT ON");
@@ -532,16 +532,16 @@ void loop() {
       // we stay in this state and wait for COR to DROP (de-activate),
       // then jump to debounce
       prevState = rptrState;
-      if (CORValue != COR_ON)
+      if (COR_Value != COR_ON)
         rptrState = CS_DEBOUNCE_COR_OFF;
       break;
 
     case CS_DEBOUNCE_COR_OFF:
       // ideally we will delay here a little while and test
-      // the result with the pCORValue to prove its not a flake
+      // the result with the pCOR_Value to prove its not a flake
       prevState = rptrState;
       delay(COR_DEBOUNCE_DELAY);
-      if ( CORValue != digitalRead(COR))
+      if ( COR_Value != digitalRead(COR_PIN))
         rptrState = CS_PTT;  // FLAKE - ignore
       else
         rptrState = CS_SQT_ON;  // COR dropped, go to sqt
@@ -572,8 +572,8 @@ void loop() {
       prevState = rptrState;
       if (ticks > SQTimer)
         rptrState = CS_SQT_OFF;
-      if (CORValue == COR_ON) {
-        pCORValue = CORValue;
+      if (COR_Value == COR_ON) {
+        pCOR_Value = COR_Value;
         rptrState = CS_DEBOUNCE_COR_ON;
       }
       break;
@@ -592,8 +592,8 @@ void loop() {
 
     case CS_PTT_OFF:
       // Turn the PTT off
-      PTTValue = PTT_OFF;
-      digitalWrite(PTT, PTTValue);
+      PTT_Value = PTT_OFF;
+      digitalWrite(PTT_PIN, PTT_Value);
       // jump to the desired next state (set by the previous state)
       prevState = rptrState;
       rptrState = nextState;
@@ -625,29 +625,31 @@ void loop() {
 
   // capture the current machine state and COR value and
   // save as 'previous' for the next loop.
-  pCORValue = CORValue;
+  pCOR_Value = COR_Value;
 
 }
 
 
 int main(int argc, char **argv)
 {
-  // If you call this, it will not actually access the GPIO
-  // Use for testing
-//    bcm2835_set_debug(1);
+	// If you call this, it will not actually access the GPIO
+	// Use for testing
+//	bcm2835_set_debug(1);
+	COR_Value = COR_OFF;
+	pCOR_Value = COR_Value;
+	PTT_Value = PTT_OFF;
+	if (!bcm2835_init())
+		return 1;
 
-  if (!bcm2835_init())
-      return 1;
+	// This is normally called on startup by the Arduino bootloader,
+	// so we have to do it here.
+	setup();	
 
-  // This is normally called on startup by the Arduino bootloader,
-  // so we have to do it here.
-  setup();	
-
-  // This is the normal operating mode of an Arduino, again we 
-  // have to provide this functionality
-  while(1)
-  {
-    loop();
-  }
+	// This is the normal operating mode of an Arduino, again we 
+	// have to provide this functionality
+	while(1)
+	{
+		loop();
+	}
 }
 
