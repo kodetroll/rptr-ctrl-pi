@@ -129,8 +129,8 @@ This program utilizes a state machine to control the various stages
 of the repeater action. These are enumerated as CtrlStates and are
 (briefly):
 
-| State | Description |
-| ----- | -----------
+| State Name | State Description |
+| ---------- | ----------------- |
 | CS_START | Starting state |
 | CS_IDLE | IDLE state, waiting for COR activity |
 | CS_DEBOUNCE_COR_ON | COR active sensed, waiting debounce time. |
