@@ -112,12 +112,12 @@ CBEEP changes to take effect.
 
 The GPIO pins that control COR/PTT/COR INDICATION & CWID are definable
 as well. The defaults are defined as follows:
-
+'''
 PTT = 17; // DIO Pin number for the PTT out - 9
 COR = 18; // DIO Pin number for the COR in - 12
 CORLED = 22; // DIO Pin number for the COR indicator LED - 11
 ID_PIN = 21; // DIO Pin for the ID Audio output tone
-
+'''
 Change these values to map these functions to alternate GPIO pins.
 These are variables, so they can be overridden or changed once the 
 applicaiton starts, however, there is currently no way to do this.
