@@ -459,22 +459,23 @@ void Show_Start_Info(void)
 }
 
 void setCOR_Sense(int Sense) {
+	
 	if (COR_SENSE == COR_POS_LOGIC) {
-		COR_ON = HIGH
-		COR_OFF = LOW
+		COR_ON = HIGH;
+		COR_OFF = LOW;
 	} else {
-		COR_ON = LOW 
-		COR_OFF = HIGH
+		COR_ON = LOW;
+		COR_OFF = HIGH;
 	}
 }	
 
 void setPTT_Sense(int Sense) {
 	if (PTT_SENSE == PTT_POS_LOGIC) {
-		PTT_ON = HIGH
-		PTT_OFF = LOW
+		PTT_ON = HIGH;
+		PTT_OFF = LOW;
 	} else {
-		PTT_ON = LOW 
-		PTT_OFF = HIGH
+		PTT_ON = LOW;
+		PTT_OFF = HIGH;
 	}
 }	
 
