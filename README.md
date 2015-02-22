@@ -1,5 +1,5 @@
-rptrctrl.c
-========== 
+rptr-ctrl-pi - rptrctrl.c
+=========================
 
 DESCRIPTION
 -----------
