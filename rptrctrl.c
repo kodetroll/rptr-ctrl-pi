@@ -628,7 +628,7 @@ char* cvt2morse(char c) {
 
 int ConvertCall(char * call) {
 	int i;
-	char * l;
+	char l[200];
 	memset(l,0x00,sizeof(l));
 	
 	printf("call: '%s'\n",call);
