@@ -633,7 +633,7 @@ int ConvertCall(char * call) {
 	
 	printf("call: '%s'\n",call);
 	for (i=0;i<strlen(call);i++) {
-		strcat(l,cvt2morse(call[i]);
+		strcat(l,cvt2morse(call[i]));
 	}
 	printf("l: '%s'\n",l);
 	for (i=0;i<sizeof(Elements);i++) {
