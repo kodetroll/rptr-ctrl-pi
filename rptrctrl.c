@@ -933,12 +933,12 @@ int LoadConfig(char * cfile) {
 
     if (ini_parse(cfile, handler, &config) < 0) {
         printf("Can't load '%s'\n",cfile);
-        return 0;
+        return (0);
     }
     printf("Config loaded from '%s': version=%d, name=%s, email=%s\n",
         cfile,config.version, config.name, config.email);
 
-	return 1
+	return (1);
 }
 
 int ParseArgs(int argc, char **argv) {
