@@ -193,8 +193,9 @@ int Need_ID;   // Whether on not we need to ID (was bool)
 //#define HIGH 1
 //#define LOW 0
 
-time_t now(void)
-{
+// This functions returns the current time in seconds from start
+// of UNIX epoch
+time_t now(void) {
 
   time_t timer;
 
@@ -203,8 +204,10 @@ time_t now(void)
   return(timer);
 }
 
-void pinMode(int pin,int value)
-{
+// This function emulates the arduino pinMode function,
+// setting the specified pin to the provided mode using
+// the bcm2835 library
+void pinMode(int pin,int value) {
   // Set the pin to be an output
   if (value == OUTPUT)
   {
@@ -226,16 +229,20 @@ void pinMode(int pin,int value)
   }
 }
 
-void digitalWrite(int pin,int value)
-{
+// This function emulates the arduino digitalWrite
+// function, setting the specified pin to the 
+// provided value using the bcm2835 library
+void digitalWrite(int pin,int value) {
   if (DEBUG)
     printf("DW: 0x%02x: 0x%02x\n",pin,value);
 
   bcm2835_gpio_write(pin, value);
 }
 
-int digitalRead(int pin)
-{
+// This function emulates the arduino digitalRead
+// function, returning the value of the specified 
+// pin using the bcm2835 library
+int digitalRead(int pin) {
   int value = 0;
   value = bcm2835_gpio_lev(pin);
   if (DEBUG)
@@ -243,18 +250,27 @@ int digitalRead(int pin)
   return(value);
 }
 
-void tone(int pin, int freq, int duration)
-{
-  digitalWrite(pin, ON);
-  if (DEBUG_TONE)
-    printf("tone: %d, %d, %d\n",pin, freq, duration);
+// This function emulates the arduino analogWrite
+// function, setting the specified PWM pin to the 
+// provided value using the bcm2835 library
+void analogWrite(int pin,int value) {
+	// to be written
+	
 }
 
-void noTone(int pin)
-{
-  digitalWrite(pin, OFF);
-  if (DEBUG_TONE)
-    printf("nTone: %d\n",pin);
+void tone(int pin, int freq, int duration)	 {
+	// Turn on ID Key
+	digitalWrite(pin, ON);
+	analogWrite(PWM_PIN,1023);
+	if (DEBUG_TONE)
+		printf("tone: %d, %d, %d\n",pin, freq, duration);
+}
+
+void noTone(int pin) {
+	digitalWrite(pin, OFF);
+	analogWrite(PWM_PIN,OFF);
+	if (DEBUG_TONE)
+		printf("nTone: %d\n",pin);
 }
 
 /* This function will reset the ID Timer by adding the
