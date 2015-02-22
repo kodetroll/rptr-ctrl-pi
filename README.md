@@ -179,17 +179,20 @@ messages to STDOUT indicating current machine status.
 
 SETTING UP THE CW ID
 ----------------
-To program the CW ID callsign, you must map the dah/dit/spaces of your 
-call to 'elements' in an 'int array'. The values of the 'elements' 
-represent a combination of the duration of the CW ID TONE and KEY. 
-A DAH element is represented by a value of '3', a DIT element is 
-represented by a value of '1' and a SPACE element is represented by 
-'0'. These values are chosen to indicate the relative length of the 
-element, with the length of the dit and space being set the same. If 
-an an element value is greater than zero, then the specified GPIO 
-ID pin is active (H) and if the element value is zero, then the 
-specified GPIO ID pin is (L). This can be used to key an off board 
-tone generator gated into the repeater audio path. 
+To program the CW ID callsign, simply change the value of DEFAULT_CALLSIGN
+as defined in the source header. All conversion to 'Elements' is taken care 
+of automagically. 
+For historical reasons, the old way of programming the CWID was:
+You must map the dah/dit/spaces of your call to 'elements' in an 'int array'. 
+The values of the 'elements' represent a combination of the duration of the 
+CW ID TONE and KEY. A DAH element is represented by a value of '3', a DIT 
+element is represented by a value of '1' and a SPACE element is represented 
+by '0'. These values are chosen to indicate the relative length of the element, 
+with the length of the dit and space being set the same. If an an element 
+value is greater than zero, then the specified GPIO ID pin is active (H) 
+and if the element value is zero, then the specified GPIO ID pin is (L). 
+This can be used to key an off board tone generator gated into the 
+repeater audio path. 
 
 For example, the call 'N0S' would be DAH DIT, SPACE, DAH DAH DAH DAH DAH, 
 SPACE, DAH DAH DAH. Represented as 'elements' this would be:
