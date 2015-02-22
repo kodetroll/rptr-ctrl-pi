@@ -81,15 +81,16 @@ There are three debug defines, DEBUG, DEBUG_BEEP, and DEBUG_TONE.
 These should be set to zero. These are left over from my conversion 
 from the Arduino sketch.
 
-The default starting timer values are defined as DEFAULT_ID_TIMER 
-- 600 Seconds (The time between CWIDs) and DEFAULT_SQ_TIMER - 1 
-second (the squelch tail ON time)
+The default starting timer values are defined as:
+ * DEFAULT_ID_TIMER - The time between CWIDs, defaults to 600 Seconds 
+ * DEFAULT_SQ_TIMER - The squelch tail ON time, defaults to 1 Second 
 
-Other misc timer values (specified in mS) ID_PTT_DELAY - 200 mS
-(time between PTT ON and start of CBEEP), ID_PTT_HANG - 500 mS 
-(amount of time after CBEEP prior to dropping PTT), CW_MIN_DELAY -
-30 mS (minimum inter-element delay) and COR_DEBOUNCE_DELAY - 50 mS
-(amount of time COR must be present before being counted as valid).
+Other misc timer values (specified in mS):
+ * ID_PTT_DELAY - Time between PTT ON and start of CBEEP, defaults to 200 mS
+ * ID_PTT_HANG - Amount of PTT time after CBEEP, defaults to 500 mS 
+ * CW_MIN_DELAY - Minimum inter-element delay, defaults to 30 mS
+ * COR_DEBOUNCE_DELAY - Amount of time COR must be present before 
+   being counted as valid, defaults to 50 mS
 
 COR and PTT logic can be specified as POSITIVE or NEGATIVE; there
 are defines (COR_POSITIVE, etc) to explicitly set this. The 
