@@ -101,15 +101,15 @@ the application must be recompiled.
 You can specify 5 different types of courtesy beep (CBEEP) by changing
 the value of the CBEEP_TYPE compiler define . The possible values are:
 are:
- | CBEEP |
- | ----- |
- | Type | Description |
- | ---- | ----------- |
- | CBEEP_NONE | No CBEEP |
- | CBEEP_SINGLE | Single tone |
- | CBEEP_DEDOOP | Two tone, hi to low frequency |
- | CBEEP_DODEEP | Two tone, low to hi frequency |
- | CBEEP_DEDEEP | Two tone, same frequency |
+| CBEEP |
+| ----- |
+| Type | Description |
+| ---- | ----------- |
+| CBEEP_NONE | No CBEEP |
+| CBEEP_SINGLE | Single tone |
+| CBEEP_DEDOOP | Two tone, hi to low frequency |
+| CBEEP_DODEEP | Two tone, low to hi frequency |
+| CBEEP_DEDEEP | Two tone, same frequency |
 
 The default is CBEEP_SINGLE. The software must be recompiled for any
 CBEEP changes to take effect.
