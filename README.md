@@ -1,8 +1,13 @@
-                       rptrctrl.c 
+                       rptrctrl.c
+                       ========== 
 
+DESCRIPTION
+-----------
 A C program to do a 'minimalist' repeater controller using a 
 Raspberry PI and simple interfacing circuitry on the GPIO Port.
 
+DISCUSSION
+----------
 This code was converted from an Arduino sketch I wrote sometime
 ago and is only intended as a test bed for testing the implementation
 method. Standard Arduino sketch functions (digitalWrite, digitalRead, 
@@ -46,19 +51,24 @@ so timeout timer precision is restricted to integer values of
 one second. The squelch tail timer is implemented the same way,
 so it has the same restrictions.
 
-See LICENSE for licensing info
-
+INSTALLING
+----------
 See INSTALL for instructions on building the application.
+
+LICENSE
+-------
+See LICENSE for licensing info
 
  * NOTE: This application must be run as root to have permissions to
    modify the GPIO pins.
 
-
 USAGE 
+-----
 
 'sudo ./rptctrl'
 
 SETUP
+-----
 
 There are three debug defines, DEBUG, DEBUG_BEEP, and DEBUG_TONE.
 These should be set to zero. These are left over from my conversion 
@@ -77,7 +87,7 @@ defaults are COR_NEGATIVE (H to L transition, L active), and
 PTT_POSITIVE (L to H transition, H active).
 
 HOW IT WORKS
-
+------------
 This program utilizes a state machine to control the various stages
 of the repeater action. These are enumerated as CtrlStates and are
 (briefly):
