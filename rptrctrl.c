@@ -159,9 +159,6 @@ int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
 // Put your call here, then count the number of elements and set
 // NumElements below
 int Elements[200];
-//int Elements[] = {
-//  3,1,3,0,3,1,1,1,0,1,1,1,1,3,0,3,3,3,0,1,1,0,3,1,1,0,3,3,1,1,3,3,0,1,3,1
-//};
 
 char Callsign[30];
 
@@ -169,6 +166,7 @@ char * cfgFile;
 
 #define DEFAULT_CALLSIGN "KB4OID"
 #define DEFAULT_CFGFILE "rptrctrl.cfg"
+
 // Here's where we define some of the CW ID characteristics
 int NumElements = 0;     // This is the number of elements in the ID
 int ID_tone = 1200;       // Audio frequency of CW ID
@@ -999,7 +997,7 @@ int main(int argc, char **argv)
 {
 	
 	strcpy(Callsign,DEFAULT_CALLSIGN);
-	strcpy(cfgFile,DEFAULT_CFGFILE);
+//	strcpy(cfgFile,DEFAULT_CFGFILE);
 	
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
