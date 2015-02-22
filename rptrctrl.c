@@ -144,6 +144,7 @@ int PTT_PIN = 17;		// DIO Pin number for the PTT out - 17
 int COR_PIN = 18;		// DIO Pin number for the COR in - 18
 int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
 int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
+int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
 
 // 17.21.22
 // This is where the callsign is mapped in dah/dit/spaces
@@ -197,57 +198,57 @@ int Need_ID;   // Whether on not we need to ID (was bool)
 // of UNIX epoch
 time_t now(void) {
 
-  time_t timer;
+	time_t timer;
 
-  timer = time(NULL);
+	timer = time(NULL);
 
-  return(timer);
+	return(timer);
 }
 
 // This function emulates the arduino pinMode function,
 // setting the specified pin to the provided mode using
 // the bcm2835 library
 void pinMode(int pin,int value) {
-  // Set the pin to be an output
-  if (value == OUTPUT)
-  {
-    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
-    bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_OFF);
-  }
-  else
-  {
-    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_UP);
-  }
+	// Set the pin to be an output
+	if (value == OUTPUT)
+	{
+		bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
+		bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_OFF);
+	}
+	else
+	{
+		bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
+		bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_UP);
+	}
 
-  if (DEBUG)
-  {
-    if (value == OUTPUT)
-      printf("PM: 0x%02x: 0x%02x [OUTPUT]\n",pin,value);
-    else
-      printf("PM: 0x%02x: 0x%02x [INPUT]\n",pin,value);
-  }
+	if (DEBUG)
+	{
+		if (value == OUTPUT)
+			printf("PM: 0x%02x: 0x%02x [OUTPUT]\n",pin,value);
+		else
+			printf("PM: 0x%02x: 0x%02x [INPUT]\n",pin,value);
+	}
 }
 
 // This function emulates the arduino digitalWrite
 // function, setting the specified pin to the 
 // provided value using the bcm2835 library
 void digitalWrite(int pin,int value) {
-  if (DEBUG)
-    printf("DW: 0x%02x: 0x%02x\n",pin,value);
+	if (DEBUG)
+		printf("DW: 0x%02x: 0x%02x\n",pin,value);
 
-  bcm2835_gpio_write(pin, value);
+	bcm2835_gpio_write(pin, value);
 }
 
 // This function emulates the arduino digitalRead
 // function, returning the value of the specified 
 // pin using the bcm2835 library
 int digitalRead(int pin) {
-  int value = 0;
-  value = bcm2835_gpio_lev(pin);
-  if (DEBUG)
-    printf("DR: 0x%02x: 0x%02x\n",pin,value);
-  return(value);
+	int value = 0;
+	value = bcm2835_gpio_lev(pin);
+	if (DEBUG)
+		printf("DR: 0x%02x: 0x%02x\n",pin,value);
+	return(value);
 }
 
 // This function emulates the arduino analogWrite
@@ -256,6 +257,8 @@ int digitalRead(int pin) {
 void analogWrite(int pin,int value) {
 	// to be written
 	
+	if (DEBUG)
+		printf("DR: 0x%02x: 0x%02x\n",pin,value);
 }
 
 void tone(int pin, int freq, int duration)	 {
@@ -277,205 +280,205 @@ void noTone(int pin) {
  * timer interval value to the current elapsed time
  */
 void reset_id_timer() {
-  IDTimer = ticks + IDTimerValue;
+	IDTimer = ticks + IDTimerValue;
 }
 
 void beep(int freq, int duration) {
 
-  if (DEBUG_BEEP)
-    printf("Beep: %d, %d\n",freq,duration);
-  // Start Playing the beep
-  tone(ID_PIN,freq,duration);
+	if (DEBUG_BEEP)
+		printf("Beep: %d, %d\n",freq,duration);
+	// Start Playing the beep
+	tone(ID_PIN,freq,duration);
 
-  // Wait for the note to end
-  delay(duration);
+	// Wait for the note to end
+	delay(duration);
 
-  // stop playing the beep
-  noTone(ID_PIN);
-  if (DEBUG_BEEP)
-    printf("Beep Done!\n");
+	// stop playing the beep
+	noTone(ID_PIN);
+	if (DEBUG_BEEP)
+		printf("Beep Done!\n");
 }
 
 /* This function will play the courtesy beep. Blocking call */
 void do_cbeep(void) {
 
-  // wait 200 mS
-  delay(ID_PTT_DELAY);
+	// wait 200 mS
+	delay(ID_PTT_DELAY);
 
-  // Calculate the Courtesy Tone duration
-  int BeepDelay = BeepDuration * CW_TIMEBASE;
+	// Calculate the Courtesy Tone duration
+	int BeepDelay = BeepDuration * CW_TIMEBASE;
 
-  switch(BEEP_type)
-  {
-    case CBEEP_NONE:
-      break;
+	switch(BEEP_type)
+	{
+		case CBEEP_NONE:
+			break;
 
-    case CBEEP_DEDOOP:
-      beep(BEEP_tone1,BeepDelay*2);
-      delay(BeepDelay);
-      beep(BEEP_tone2,BeepDelay);
-      break;
+		case CBEEP_DEDOOP:
+			beep(BEEP_tone1,BeepDelay*2);
+			delay(BeepDelay);
+			beep(BEEP_tone2,BeepDelay);
+			break;
 
-    case CBEEP_DODEEP:
-      beep(BEEP_tone2,BeepDelay*2);
-      delay(BeepDelay);
-      beep(BEEP_tone1,BeepDelay);
-      break;
+		case CBEEP_DODEEP:
+			beep(BEEP_tone2,BeepDelay*2);
+			delay(BeepDelay);
+			beep(BEEP_tone1,BeepDelay);
+			break;
 
-    case CBEEP_DEDEEP:
-      beep(BEEP_tone1,BeepDelay);
-      delay(BeepDelay);
-      beep(BEEP_tone1,BeepDelay);
-      break;
+		case CBEEP_DEDEEP:
+			beep(BEEP_tone1,BeepDelay);
+			delay(BeepDelay);
+			beep(BEEP_tone1,BeepDelay);
+			break;
 
-    case CBEEP_SINGLE:
-    default:
-      beep(BEEP_tone1,BeepDelay);
-      break;
-  }
+		case CBEEP_SINGLE:
+		default:
+			beep(BEEP_tone1,BeepDelay);
+			break;
+	}
 
-  // A little delay never hurts
-  delay(CW_MIN_DELAY);
+	// A little delay never hurts
+	delay(CW_MIN_DELAY);
 
 }
 
 /* this function will play the CW ID *BLOCKING CALL* */
 void do_ID() {
-  int Element = 0;
+	int Element = 0;
 
-  // exit if we do not need to ID yet
-  if (!Need_ID)
-    return;
+	// exit if we do not need to ID yet
+	if (!Need_ID)
+		return;
 
-  // We turn on the PTT output
-  PTT_Value = PTT_ON;
-  digitalWrite(PTT_PIN, PTT_Value);
+	// We turn on the PTT output
+	PTT_Value = PTT_ON;
+	digitalWrite(PTT_PIN, PTT_Value);
 
-  // wait 200 mS
-  delay(ID_PTT_DELAY);
+	// wait 200 mS
+	delay(ID_PTT_DELAY);
 
-  // calculate the length of time to wait for the ID tone
-  // to quit playing.
-  int InterElementDelay = CW_TIMEBASE * 1.3;
+	// calculate the length of time to wait for the ID tone
+	// to quit playing.
+	int InterElementDelay = CW_TIMEBASE * 1.3;
 
-  if (DEBUG)
-    printf("NumElements: %d\n",NumElements);
+	if (DEBUG)
+		printf("NumElements: %d\n",NumElements);
 
-  // We Play the ID elements
-  for (Element = 0; Element < NumElements; Element++) {
-    if (DEBUG)
-      printf("Element: %d, Elements[%d]: %d\n",Element,Element,Elements[Element]);
-    if (Elements[Element] != 0) {
-      tone(ID_PIN,ID_tone,Elements[Element] * CW_TIMEBASE);
-      delay(Elements[Element] * InterElementDelay);
-      noTone(ID_PIN);
-    }
-    else
-      delay(InterElementDelay);
+	// We Play the ID elements
+	for (Element = 0; Element < NumElements; Element++) {
+		if (DEBUG)
+			printf("Element: %d, Elements[%d]: %d\n",Element,Element,Elements[Element]);
+		if (Elements[Element] != 0) {
+			tone(ID_PIN,ID_tone,Elements[Element] * CW_TIMEBASE);
+			delay(Elements[Element] * InterElementDelay);
+			noTone(ID_PIN);
+		}
+		else
+			delay(InterElementDelay);
 
-    // add a little extra inter element delay
-    delay(CW_MIN_DELAY);
-  }
+		// add a little extra inter element delay
+		delay(CW_MIN_DELAY);
+	}
 
-  // wait 200 mS
-  delay(ID_PTT_DELAY);
+	// wait 200 mS
+	delay(ID_PTT_DELAY);
 
-  // do courtesy beep
-  do_cbeep();
+	// do courtesy beep
+	do_cbeep();
 
-  // we give a little PTT hang time
-  delay(ID_PTT_HANG);
+	// we give a little PTT hang time
+	delay(ID_PTT_HANG);
 
-  // Turn off the PTT
-  PTT_Value = PTT_OFF;
-  digitalWrite(PTT_PIN, PTT_Value);
+	// Turn off the PTT
+	PTT_Value = PTT_OFF;
+	digitalWrite(PTT_PIN, PTT_Value);
 
-  // reset the ID timer
-  reset_id_timer();
-  // turn off need id
-  Need_ID = LOW;
+	// reset the ID timer
+	reset_id_timer();
+	// turn off need id
+	Need_ID = LOW;
 }
 
 /* This function will print current repeater operating states
  * to the serial port. For debuggin purposes only.
  */
 void show_state_info() {
-  printf ("t: %d:state:%d,%d,%d:C:%d,%d:P:%d\n",now(),prevState, rptrState,nextState,COR_Value,pCOR_Value,PTT_Value);
+	printf ("t: %d:state:%d,%d,%d:C:%d,%d:P:%d\n",now(),prevState, rptrState,nextState,COR_Value,pCOR_Value,PTT_Value);
 }
 
 /* Startup info */
 void Show_Start_Info(void)
 {
-  printf("Start Time: %d S\n",now());
-  printf("ID_Tone: %d Hz\n",ID_tone);
-  printf("Beep_Tone1: %d Hz\n",BEEP_tone1);
-  printf("Beep_Tone2: %d Hz\n",BEEP_tone2);
-  printf("CW ID Speed: %d mS\n",CW_TIMEBASE);
-  printf("BeepDuration: %d mS\n",BeepDuration);
-  printf("NumElements: %d\n",NumElements);
+	printf("Start Time: %d S\n",now());
+	printf("ID_Tone: %d Hz\n",ID_tone);
+	printf("Beep_Tone1: %d Hz\n",BEEP_tone1);
+	printf("Beep_Tone2: %d Hz\n",BEEP_tone2);
+	printf("CW ID Speed: %d mS\n",CW_TIMEBASE);
+	printf("BeepDuration: %d mS\n",BeepDuration);
+	printf("NumElements: %d\n",NumElements);
 }
 
 /* One time startup init loop */
 void setup() {
 
-  // Determine the size of the Elements array
-  NumElements = sizeof(Elements)/SIZE_OF_INT;
+	// Determine the size of the Elements array
+	NumElements = sizeof(Elements)/SIZE_OF_INT;
 
-  // Get a current tick timer value
-  ticks = now();
+	// Get a current tick timer value
+	ticks = now();
 
-  // initialize the timers
-  SQTimerValue = DEFAULT_SQ_TIMER;
-  IDTimerValue = DEFAULT_ID_TIMER;
+	// initialize the timers
+	SQTimerValue = DEFAULT_SQ_TIMER;
+	IDTimerValue = DEFAULT_ID_TIMER;
 
-  // incase any setup code needs to know what state we are in
-  rptrState = CS_START;
+	// incase any setup code needs to know what state we are in
+	rptrState = CS_START;
 
-  // setup the DIO pins for the right modes
-  pinMode(PTT_PIN, OUTPUT);
-  pinMode(COR_PIN, INPUT);
-  pinMode(COR_LED, OUTPUT);
+	// setup the DIO pins for the right modes
+	pinMode(PTT_PIN, OUTPUT);
+	pinMode(COR_PIN, INPUT);
+	pinMode(COR_LED, OUTPUT);
 
-  // make sure we start with PTT off
-  digitalWrite(PTT_PIN, PTT_OFF);
+	// make sure we start with PTT off
+	digitalWrite(PTT_PIN, PTT_OFF);
 
-  // Get current values for COR
-  COR_Value = digitalRead(COR_PIN);
-  pCOR_Value = COR_Value;
+	// Get current values for COR
+	COR_Value = digitalRead(COR_PIN);
+	pCOR_Value = COR_Value;
 
-  // Here is the first state we jump to
-  rptrState = CS_IDLE;
+	// Here is the first state we jump to
+	rptrState = CS_IDLE;
 
-  Show_Start_Info();
+	Show_Start_Info();
 
-  // make sure we ID at startup.
-  Need_ID = HIGH;
+	// make sure we ID at startup.
+	Need_ID = HIGH;
 }
 
 void get_cor() {
-  // Read the COR input and store it in a global
-  COR_Value = digitalRead(COR_PIN);
-  // lite the external COR indicator LED
-  if (COR_Value == COR_ON)
-    digitalWrite(COR_LED,HIGH);
-  else
-    digitalWrite(COR_LED,LOW);
+	// Read the COR input and store it in a global
+	COR_Value = digitalRead(COR_PIN);
+	// lite the external COR indicator LED
+	if (COR_Value == COR_ON)
+		digitalWrite(COR_LED,HIGH);
+	else
+		digitalWrite(COR_LED,LOW);
 }
 
 void show_msg(char * buf) {
 
-  printf ("[%d] %s\n",now(),buf);
+	printf ("[%d] %s\n",now(),buf);
 }
 
 void loop1() {
 
-  // grab the current elapsed time
-  ticks = now();
+	// grab the current elapsed time
+	ticks = now();
 
-  // grab the current COR value
-  get_cor();
+	// grab the current COR value
+	get_cor();
 
-  printf("COR_Value[%d]: %d\n",ticks,COR_Value);
+	printf("COR_Value[%d]: %d\n",ticks,COR_Value);
 
 //  if (COR_Value == COR_ON) {
 //    printf("COR ON\n");
@@ -486,162 +489,161 @@ void loop1() {
 
 void loop() {
 
-  // grab the current elapsed time
-  ticks = now();
+	// grab the current elapsed time
+	ticks = now();
 
-  // grab the current COR value
-  get_cor();
+	// grab the current COR value
+	get_cor();
 
-  // execute the state machibe
-  switch(rptrState)
-  {
-    case CS_START:
-      // do nothing
-      show_msg("START");
-      rptrState = CS_IDLE;
+	// execute the state machibe
+	switch(rptrState)
+	{
+		case CS_START:
+			// do nothing
+			show_msg("START");
+			rptrState = CS_IDLE;
 
-      break;
+			break;
 
-    case CS_IDLE:
-      // wait for COR to activate, then jump to debounce
-      if (rptrState != prevState)
-        show_msg("IDLE");
+		case CS_IDLE:
+			// wait for COR to activate, then jump to debounce
+			if (rptrState != prevState)
+				show_msg("IDLE");
 	
-      prevState = rptrState;
-      if (COR_Value == COR_ON) {
-        pCOR_Value = COR_Value;
-        rptrState = CS_DEBOUNCE_COR_ON;
-      }
+			prevState = rptrState;
+			if (COR_Value == COR_ON) {
+				pCOR_Value = COR_Value;
+				rptrState = CS_DEBOUNCE_COR_ON;
+			}
 
-      // look for ID timer expiry
-      if ((ticks > IDTimer) && Need_ID)
-        rptrState = CS_ID;
+			// look for ID timer expiry
+			if ((ticks > IDTimer) && Need_ID)
+				rptrState = CS_ID;
 
-      break;
+			break;
 
-    case CS_DEBOUNCE_COR_ON:
-      prevState = rptrState;
-      // ideally we will delay here a little while and test
-      // the current value (after the delay) with the pCOR_Value
-      // to prove its not a flake
-      delay(COR_DEBOUNCE_DELAY);
-      if ( pCOR_Value != digitalRead(COR_PIN)) {
-        rptrState = CS_IDLE;  // FLAKE - bail back to IDLE
-      } else {
-        nextState = CS_PTT;    // where we will go after PTT_ON
-        rptrState = CS_PTT_ON;  // good COR - PTT ON
-        show_msg("COR ON");
-      }
-      break;
+		case CS_DEBOUNCE_COR_ON:
+			prevState = rptrState;
+			// ideally we will delay here a little while and test
+			// the current value (after the delay) with the pCOR_Value
+			// to prove its not a flake
+			delay(COR_DEBOUNCE_DELAY);
+			if ( pCOR_Value != digitalRead(COR_PIN)) {
+				rptrState = CS_IDLE;  // FLAKE - bail back to IDLE
+			} else {
+				nextState = CS_PTT;    // where we will go after PTT_ON
+				rptrState = CS_PTT_ON;  // good COR - PTT ON
+				show_msg("COR ON");
+			}
+			break;
 
-    case CS_PTT_ON:
-      prevState = rptrState;
-      // turn on PTT
-      PTT_Value = PTT_ON;
-      digitalWrite(PTT_PIN, PTT_Value);
-      // jump to the desired next state (set by the previous state)
-      rptrState = nextState;
-      show_msg("PTT ON");
-      break;
+		case CS_PTT_ON:
+			prevState = rptrState;
+			// turn on PTT
+			PTT_Value = PTT_ON;
+			digitalWrite(PTT_PIN, PTT_Value);
+			// jump to the desired next state (set by the previous state)
+			rptrState = nextState;
+			show_msg("PTT ON");
+			break;
 
-    case CS_PTT:
-      // we stay in this state and wait for COR to DROP (de-activate),
-      // then jump to debounce
-      prevState = rptrState;
-      if (COR_Value != COR_ON)
-        rptrState = CS_DEBOUNCE_COR_OFF;
-      break;
+		case CS_PTT:
+			// we stay in this state and wait for COR to DROP (de-activate),
+			// then jump to debounce
+			prevState = rptrState;
+			if (COR_Value != COR_ON)
+				rptrState = CS_DEBOUNCE_COR_OFF;
+			break;
 
-    case CS_DEBOUNCE_COR_OFF:
-      // ideally we will delay here a little while and test
-      // the result with the pCOR_Value to prove its not a flake
-      prevState = rptrState;
-      delay(COR_DEBOUNCE_DELAY);
-      if ( COR_Value != digitalRead(COR_PIN))
-        rptrState = CS_PTT;  // FLAKE - ignore
-      else
-        rptrState = CS_SQT_ON;  // COR dropped, go to sqt
-        show_msg("COR OFF");
-      break;
+		case CS_DEBOUNCE_COR_OFF:
+			// ideally we will delay here a little while and test
+			// the result with the pCOR_Value to prove its not a flake
+			prevState = rptrState;
+			delay(COR_DEBOUNCE_DELAY);
+			if ( COR_Value != digitalRead(COR_PIN))
+				rptrState = CS_PTT;  // FLAKE - ignore
+			else
+				rptrState = CS_SQT_ON;  // COR dropped, go to sqt
+				show_msg("COR OFF");
+			break;
 
-    case CS_SQT_ON:
-      // set SQTimer active
-      SQTimer = ticks + SQTimerValue;
-      // jump to next state
-      prevState = rptrState;
-      rptrState = CS_SQT_BEEP;
-      show_msg("SQT ON");
-      break;
+		case CS_SQT_ON:
+			// set SQTimer active
+			SQTimer = ticks + SQTimerValue;
+			// jump to next state
+			prevState = rptrState;
+			rptrState = CS_SQT_BEEP;
+			show_msg("SQT ON");
+			break;
 
-    case CS_SQT_BEEP:
-      // Do the courtesy beep
-      do_cbeep();
-      // jump to CS_SQT to wait for SQT timer
-      prevState = rptrState;
-      rptrState = CS_SQT;
-      show_msg("BEEP");
-      break;
+			case CS_SQT_BEEP:
+			// Do the courtesy beep
+			do_cbeep();
+			// jump to CS_SQT to wait for SQT timer
+			prevState = rptrState;
+			rptrState = CS_SQT;
+			show_msg("BEEP");
+			break;
 
-    case CS_SQT:
-      // We stay in this state until SQTimer expires, then
-      // we jump to to CS_SQT_OFF
-      prevState = rptrState;
-      if (ticks > SQTimer)
-        rptrState = CS_SQT_OFF;
-      if (COR_Value == COR_ON) {
-        pCOR_Value = COR_Value;
-        rptrState = CS_DEBOUNCE_COR_ON;
-      }
-      break;
+		case CS_SQT:
+			// We stay in this state until SQTimer expires, then
+			// we jump to to CS_SQT_OFF
+			prevState = rptrState;
+			if (ticks > SQTimer)
+			rptrState = CS_SQT_OFF;
+			if (COR_Value == COR_ON) {
+				pCOR_Value = COR_Value;
+				rptrState = CS_DEBOUNCE_COR_ON;
+			}
+			break;
 
-    case CS_SQT_OFF:
-      // set SQTail not active
-      prevState = rptrState;
-      nextState = CS_IDLE;
-      rptrState = CS_PTT_OFF;
-      // We just got done transmitting, so we need
-      // to ID next time the ID timer expires
-      Need_ID = HIGH;
-      show_msg("SQT OFF");
+		case CS_SQT_OFF:
+			// set SQTail not active
+			prevState = rptrState;
+			nextState = CS_IDLE;
+			rptrState = CS_PTT_OFF;
+			// We just got done transmitting, so we need
+			// to ID next time the ID timer expires
+			Need_ID = HIGH;
+			show_msg("SQT OFF");
+			break;
 
-      break;
+		case CS_PTT_OFF:
+			// Turn the PTT off
+			PTT_Value = PTT_OFF;
+			digitalWrite(PTT_PIN, PTT_Value);
+			// jump to the desired next state (set by the previous state)
+			prevState = rptrState;
+			rptrState = nextState;
+			show_msg("PTT OFF");
 
-    case CS_PTT_OFF:
-      // Turn the PTT off
-      PTT_Value = PTT_OFF;
-      digitalWrite(PTT_PIN, PTT_Value);
-      // jump to the desired next state (set by the previous state)
-      prevState = rptrState;
-      rptrState = nextState;
-      show_msg("PTT OFF");
+			break;
 
-      break;
+		case CS_ID:
+			show_msg("ID");
 
-    case CS_ID:
-      show_msg("ID");
+			// Go do the ID (this is a *blocking* call)
+			do_ID();
+			// back to the IDLE state when
+			prevState = rptrState;
+			rptrState = CS_IDLE;
+			// we have satisfied our need to ID, so NO
+			Need_ID = LOW;
+			show_msg("ID DONE");
 
-      // Go do the ID (this is a *blocking* call)
-      do_ID();
-      // back to the IDLE state when
-      prevState = rptrState;
-      rptrState = CS_IDLE;
-      // we have satisfied our need to ID, so NO
-      Need_ID = LOW;
-      show_msg("ID DONE");
+			break;
 
-      break;
+		default:
+			// do nothing
+			break;
+	}
 
-    default:
-      // do nothing
-      break;
-  }
+	// Comment this out to stop reporting this info
+	//show_state_info();
 
-  // Comment this out to stop reporting this info
-  //show_state_info();
-
-  // capture the current machine state and COR value and
-  // save as 'previous' for the next loop.
-  pCOR_Value = COR_Value;
+	// capture the current machine state and COR value and
+	// save as 'previous' for the next loop.
+	pCOR_Value = COR_Value;
 
 }
 
