@@ -101,11 +101,15 @@ the application must be recompiled.
 You can specify 5 different types of courtesy beep (CBEEP) by changing
 the value of the CBEEP_TYPE compiler define . The possible values are:
 are:
- * CBEEP_NONE - No CBEEP
- * CBEEP_SINGLE - Single tone
- * CBEEP_DEDOOP - Two tone, hi to low frequency
- * CBEEP_DODEEP - Two tone, low to hi frequency
- * CBEEP_DEDEEP - Two tone, same frequency
+ | CBEEP |
+ | ----- |
+ | Type | Description |
+ | ---- | ----------- |
+ | CBEEP_NONE | No CBEEP |
+ | CBEEP_SINGLE | Single tone |
+ | CBEEP_DEDOOP | Two tone, hi to low frequency |
+ | CBEEP_DODEEP | Two tone, low to hi frequency |
+ | CBEEP_DEDEEP | Two tone, same frequency |
 
 The default is CBEEP_SINGLE. The software must be recompiled for any
 CBEEP changes to take effect.
@@ -154,15 +158,15 @@ The program layout somewhat resembles an arduino sketch. There is a
 which is run once at program start, and a 'loop' function that runs 
 continiously.
 
-During execution of the loop section, the cor state is read and a switch
+During execution of the loop section, the COR state is read and a switch
 statement fires a CASE (once for each state) based on the current state. 
 As each state CASE is completed, the next state is defined. In this way
-the program steps from state to state. Some states are transition states
+the program steps from state to state. Some states are transition states,
 in which they are executed once and proceed immediately to the next state
 with the next call of loop(). Other states are entered and the program 
-will stay there through multiple calls of loop() until some condition is 
+will loiter there through multiple calls of loop() until some condition is 
 met or reached and the state changes. Transition states may output
-messages to indicate current machine status.
+messages to STDOUT indicating current machine status.
 
 SETTING UP THE CW ID
 ----------------
