@@ -162,7 +162,7 @@ int Elements[200];
 
 char Callsign[30];
 
-char * cfgFile;
+char cfgFile[50];
 
 #define DEFAULT_CALLSIGN "KB4OID"
 #define DEFAULT_CFGFILE "rptrctrl.cfg"
@@ -997,7 +997,7 @@ int main(int argc, char **argv)
 {
 	
 	strcpy(Callsign,DEFAULT_CALLSIGN);
-//	strcpy(cfgFile,DEFAULT_CFGFILE);
+	strcpy(cfgFile,DEFAULT_CFGFILE);
 	
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
