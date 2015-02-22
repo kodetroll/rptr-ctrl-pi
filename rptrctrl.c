@@ -145,6 +145,7 @@ enum BeepTypes {
   CBEEP_DEDEEP
 };
 
+// 17.21.22
 // This is where we define what DIO PINs map to what functions
 int PTT_PIN = 17;		// DIO Pin number for the PTT out - 17
 int COR_PIN = 18;		// DIO Pin number for the COR in - 18
@@ -152,7 +153,6 @@ int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
 int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
 int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
 
-// 17.21.22
 // This is where the callsign is mapped in dah/dit/spaces
 // e.g. N0S would be 3,1,0,3,3,3,3,3,0,3,3,3,0
 // Put your call here, then count the number of elements and set
@@ -164,8 +164,10 @@ int Elements[200];
 
 char Callsign[30];
 
+#define DEFAULT_CALLSIGN "KB4OID"
+
 // Here's where we define some of the CW ID characteristics
-int NumElements = 36;     // This is the number of elements in the ID
+int NumElements = 0;     // This is the number of elements in the ID
 int ID_tone = 1200;       // Audio frequency of CW ID
 int BEEP_type = CBEEP_SINGLE;    // Courtesy Beep Type
 int BEEP_tone1 = 1000;    // Audio frequency of Courtesy Beep 1
@@ -452,15 +454,20 @@ void show_state_info() {
 /* Startup info */
 void Show_Start_Info(void)
 {
+	int i;
 	printf("Start Time: %d S\n",now());
 	printf("ID_Tone: %d Hz\n",ID_tone);
 	printf("Beep_Tone1: %d Hz\n",BEEP_tone1);
 	printf("Beep_Tone2: %d Hz\n",BEEP_tone2);
 	printf("CW ID Speed: %d mS\n",CW_TIMEBASE);
 	printf("BeepDuration: %d mS\n",BeepDuration);
-	printf("NumElements: %d\n",NumElements);
 	printf("CallSign: '%s'\n",Callsign);
-}
+	printf("NumElements: %d\n",NumElements);
+	printf("Elements: ");
+	for (i=0;i<NumElements;i++) {
+		printf("%d,",Elements[i]);
+	}
+	printf("\n");}
 
 void setCOR_Sense(int Sense) {
 	
@@ -631,23 +638,19 @@ int ConvertCall(char * call) {
 	char l[200];
 	memset(l,0x00,sizeof(l));
 	
-	printf("call: '%s'\n",call);
+//	printf("call: '%s'\n",call);
 	for (i=0;i<strlen(call);i++) {
 		strcat(l,cvt2morse(call[i]));
 	}
-	printf("l: '%s'\n",l);
-	printf("sizeof(Elements): %d\n",sizeof(Elements));
+//	printf("l: '%s'\n",l);
+//	printf("sizeof(Elements): %d\n",sizeof(Elements));
 	for (i=0;i<sizeof(Elements)/SIZE_OF_INT;i++) {
 		Elements[i] = 0;
 	}
 	for (i=0;i<strlen(l);i++) {
 		Elements[i] = l[i]-0x30;
 	}
-	printf("Elements: ");
-	for (i=0;i<strlen(l);i++) {
-		printf("%d,",Elements[i]);
-	}
-	printf("\n");
+
 	return(i);
 }
 
@@ -661,10 +664,10 @@ void setup() {
 //	NumElements = sizeof(Elements)/SIZE_OF_INT;
 //	printf("NumElements: %d\n",NumElements);
 
-	printf("Callsign: '%s'\n",Callsign);
+//	printf("Callsign: '%s'\n",Callsign);
 	
 	NumElements = ConvertCall(Callsign);
-	printf("NumElements: %d\n",NumElements);
+//	printf("NumElements: %d\n",NumElements);
 
 	// Get a current tick timer value
 	ticks = now();
@@ -900,7 +903,7 @@ int main(int argc, char **argv)
 {
 	char * cfgFile;
 	
-	strcpy(Callsign,"KB4OID");
+	strcpy(Callsign,DEFAULT_CALLSIGN);
 	
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
