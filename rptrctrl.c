@@ -390,11 +390,13 @@ void show_state_info() {
 /* Startup info */
 void Show_Start_Info(void)
 {
-  printf("Start Time:%d\n",now());
-  printf("ID_Tone:%d\n",ID_tone);
-  printf("Beep_Tone1:%d\n",BEEP_tone1);
-  printf("Beep_Tone2:%d\n",BEEP_tone2);
-  printf("NumElements:%d\n",NumElements);
+  printf("Start Time: %d S\n",now());
+  printf("ID_Tone: %d Hz\n",ID_tone);
+  printf("Beep_Tone1: %d Hz\n",BEEP_tone1);
+  printf("Beep_Tone2: %d Hz\n",BEEP_tone2);
+  printf("CW ID Speed: %d mS\n",CW_TIMEBASE);
+  printf("BeepDuration: %d mS\n",BeepDuration);
+  printf("NumElements: %d\n",NumElements);
 }
 
 /* One time startup init loop */
