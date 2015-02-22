@@ -640,7 +640,7 @@ int ConvertCall(char * call) {
 		Elements[i] = 0;
 	}
 	for (i=0;i<strlen(l);i++) {
-		Elements[i] = atoi(l[i]);
+		Elements[i] = l[i]-0x30;
 	}
 	printf("Elements: ");
 	for (i=0;i<strlen(l);i++) {
