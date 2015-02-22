@@ -976,6 +976,9 @@ int LoadConfig(char * cfile) {
     printf("beeptime: '%s'\n", config.beeptime);
     printf("cwidspeed: '%s'\n", config.cwidspeed);
 
+    if (config.callsign != "")
+		strcpy(Callsign,config.callsign);
+
 	return (1);
 }
 
