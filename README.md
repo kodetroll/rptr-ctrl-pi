@@ -66,13 +66,13 @@ LICENSE
 -------
 See LICENSE for licensing info
 
- * NOTE: This application must be run as root to have permissions to
-   modify the GPIO pins.
-
 USAGE 
 -----
 
 'sudo ./rptctrl'
+
+ * NOTE: This application must be run as root to have permissions to
+   modify the GPIO pins.
 
 SETUP
 -----
