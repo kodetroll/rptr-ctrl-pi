@@ -92,8 +92,8 @@
 // other, comment out the following define to make COR follow
 // NEGATIVE logic
 
-#define COR_POSITIVE 1
-#define COR_NEGATIVE 0
+#define COR_POS_LOGIC 1
+#define COR_NEG_LOGIC 0
 
 //#define COR_POS_LOGIC
 //#ifdef COR_POS_LOGIC
@@ -108,17 +108,18 @@
 // output is active or not. These two cases are inverses of each
 // other, comment out the following define to make PTT follow
 // NEGATIVE logic
-#define PTT_POSITIVE 1
-#define PTT_NEGATIVE 1
 
-#define PTT_POS_LOGIC
-#ifdef PTT_POS_LOGIC
-  #define PTT_ON   HIGH    // DIO Pin state when PTT is active
-  #define PTT_OFF  LOW     // DIO Pin state when PTT is not active
-#else
-  #define PTT_ON   LOW     // DIO Pin state when PTT is active
-  #define PTT_OFF  HIGH    // DIO Pin state when PTT is not active
-#endif
+#define PTT_POS_LOGIC 1
+#define PTT_NEG_LOGIC 0
+
+//#define PTT_POS_LOGIC
+//#ifdef PTT_POS_LOGIC
+//  #define PTT_ON   HIGH    // DIO Pin state when PTT is active
+//  #define PTT_OFF  LOW     // DIO Pin state when PTT is not active
+//#else
+//  #define PTT_ON   LOW     // DIO Pin state when PTT is active
+//  #define PTT_OFF  HIGH    // DIO Pin state when PTT is not active
+//#endif
 
 // Master enum of state machine states
 enum CtrlStates {
@@ -191,13 +192,15 @@ int COR_Value;  // current COR value
 int pCOR_Value; // previous COR value
 int PTT_Value;  // current PTT state
 
+// COR and PTT Logic sense
+int COR_SENSE;
+int PTT_SENSE;
+
+// COR and PTT Logic sense states
 int COR_ON;
 int COR_OFF;
 int PTT_ON;
 int PTT_OFF;
-
-int COR_SENSE;
-int PTT_SENSE;
 
 int Need_ID;   // Whether on not we need to ID (was bool)
 
