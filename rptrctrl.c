@@ -193,8 +193,8 @@ int pCOR_Value; // previous COR value
 int PTT_Value;  // current PTT state
 
 // COR and PTT Logic sense
-int COR_SENSE;
-int PTT_SENSE;
+int COR_SENSE = COR_NEG_LOGIC;
+int PTT_SENSE = PTT_POS_LOGIC;
 
 // COR and PTT Logic sense states
 int COR_ON;
@@ -722,8 +722,7 @@ int main(int argc, char **argv)
 {
 	char * cfgFile;
 	
-	COR_SENSE = COR_POS_LOGIC;
-	PTT_SENSE = PTT_POS_LOGIC;
+	
 
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
