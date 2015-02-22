@@ -637,7 +637,7 @@ int ConvertCall(char * call) {
 	}
 	printf("l: '%s'\n",l);
 	printf("sizeof(Elements): %d\n",sizeof(Elements));
-	for (i=0;i<sizeof(Elements);i++) {
+	for (i=0;i<sizeof(Elements)/SIZE_OF_INT;i++) {
 		Elements[i] = 0;
 	}
 	for (i=0;i<strlen(l);i++) {
