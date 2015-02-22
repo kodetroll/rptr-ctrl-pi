@@ -13,7 +13,7 @@ CC=gcc
 CFLAGS=-I.
 LDFLAGS=-lbcm2835 -lrt
 #DEPS = C.h
-OBJ = rptrctrl.o 
+OBJ = rptrctrl.o inih.o 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
