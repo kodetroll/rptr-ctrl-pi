@@ -647,7 +647,7 @@ int ConvertCall(char * call) {
 		printf("%d,",Elements[i]);
 	}
 	printf("\n");
-	
+	return(i);
 }
 
 /* One time startup init loop */
