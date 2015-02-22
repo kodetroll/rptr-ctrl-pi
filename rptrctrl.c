@@ -165,8 +165,10 @@ int Elements[200];
 
 char Callsign[30];
 
-#define DEFAULT_CALLSIGN "KB4OID"
+char * cfgFile;
 
+#define DEFAULT_CALLSIGN "KB4OID"
+#define DEFAULT_CFGFILE "rptrctrl.cfg"
 // Here's where we define some of the CW ID characteristics
 int NumElements = 0;     // This is the number of elements in the ID
 int ID_tone = 1200;       // Audio frequency of CW ID
@@ -916,17 +918,17 @@ int ParseArgs(int argc, char **argv) {
 			{"brief",   no_argument,       &verbose_flag, 0},
 			/* These options don’t set a flag.
                We distinguish them by their indices. */
-			{"add",     no_argument,       0, 'a'},
-			{"append",  no_argument,       0, 'b'},
-			{"delete",  required_argument, 0, 'd'},
-			{"create",  required_argument, 0, 'c'},
+//			{"add",     no_argument,       0, 'a'},
+//			{"append",  no_argument,       0, 'b'},
+//			{"delete",  required_argument, 0, 'd'},
+			{"call",  required_argument, 0, 'c'},
 			{"file",    required_argument, 0, 'f'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "abc:d:f:",
+		c = getopt_long (argc, argv, "c:f:",
                        long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -953,7 +955,9 @@ int ParseArgs(int argc, char **argv) {
 				break;
 
 			case 'c':
+				// load callsign
 				printf ("option -c with value `%s'\n", optarg);
+				strcpy(Callsign,optarg);
 				break;
 
 			case 'd':
@@ -961,7 +965,9 @@ int ParseArgs(int argc, char **argv) {
 				break;
 
 			case 'f':
+				// load alternate config filename
 				printf ("option -f with value `%s'\n", optarg);
+				strcpy(cfgFile,optarg);
 				break;
 
 			case '?':
@@ -991,9 +997,9 @@ int ParseArgs(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
-	char * cfgFile;
 	
 	strcpy(Callsign,DEFAULT_CALLSIGN);
+	strcpy(cfgFile,DEFAULT_CFGFILE);
 	
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
@@ -1002,6 +1008,7 @@ int main(int argc, char **argv)
 	ID_PIN = OFF;
 
 	ParseArgs(argc,argv);
+
 	LoadConfig(cfgFile);
 	
 	// If you call this, it will not actually access the GPIO
