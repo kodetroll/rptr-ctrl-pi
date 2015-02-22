@@ -81,47 +81,102 @@ There are three debug defines, DEBUG, DEBUG_BEEP, and DEBUG_TONE.
 These should be set to zero. These are left over from my conversion 
 from the Arduino sketch.
 
-The default starting timer values are defined in DEFAULT_ID_TIMER 
-(600 Seconds) and DEFAULT_SQ_TIMER (1 second)
+The default starting timer values are defined as DEFAULT_ID_TIMER 
+- 600 Seconds (The time between CWIDs) and DEFAULT_SQ_TIMER - 1 
+second (the squelch tail ON time)
 
-Other misc timer values (specified in mS) ID_PTT_DELAY (200 mS),
-ID_PTT_HANG (500 mS), CW_MIN_DELAY (30 mS) and COR_DEBOUNCE_DELAY
-(50 mS).
+Other misc timer values (specified in mS) ID_PTT_DELAY - 200 mS
+(time between PTT ON and start of CBEEP), ID_PTT_HANG - 500 mS 
+(amount of time after CBEEP prior to dropping PTT), CW_MIN_DELAY -
+30 mS (minimum inter-element delay) and COR_DEBOUNCE_DELAY - 50 mS
+(amount of time COR must be present before being counted as valid).
 
 COR and PTT logic can be specified as POSITIVE or NEGATIVE; there
 are defines (COR_POSITIVE, etc) to explicitly set this. The 
 defaults are COR_NEGATIVE (H to L transition, L active), and 
-PTT_POSITIVE (L to H transition, H active).
+PTT_POSITIVE (L to H transition, H active). If these are changed,
+the application must be recompiled.
+
+You can specify 5 different types of courtesy beep (CBEEP) by changing
+the value of the CBEEP_TYPE compiler define . The possible values are:
+are:
+ * CBEEP_NONE - No CBEEP
+ * CBEEP_SINGLE - Single tone
+ * CBEEP_DEDOOP - Two tone, hi to low frequency
+ * CBEEP_DODEEP - Two tone, low to hi frequency
+ * CBEEP_DEDEEP - Two tone, same frequency
+
+The default is CBEEP_SINGLE. The software must be recompiled for any
+CBEEP changes to take effect.
+
+The GPIO pins that control COR/PTT/COR INDICATION & CWID are definable
+as well. The defaults are defined as follows:
+
+PTT = 17; // DIO Pin number for the PTT out - 9
+COR = 18; // DIO Pin number for the COR in - 12
+CORLED = 22; // DIO Pin number for the COR indicator LED - 11
+ID_PIN = 21; // DIO Pin for the ID Audio output tone
+
+Change these values to map these functions to alternate GPIO pins.
+These are variables, so they can be overridden or changed once the 
+applicaiton starts, however, there is currently no way to do this.
+If the defaults are changed, the application must be recompiled.
 
 HOW IT WORKS
 ------------
 This program utilizes a state machine to control the various stages
 of the repeater action. These are enumerated as CtrlStates and are
 (briefly):
-  CS_START - Starting state
-  CS_IDLE - IDLE state, waiting for COR activity
-  CS_DEBOUNCE_COR_ON - COR active sensed, waiting debounce time.
-  CS_PTT_ON - Setting PTT to active state
-  CS_PTT - PTT in active hold state 
-  CS_DEBOUNCE_COR_OFF - COR dropped, going to Squelch Tail
-  CS_SQT_ON = Squelch tail activated
-  CS_SQT_BEEP - Courtesy Beep generating
-  CS_SQT - Squelch tail hold
-  CS_SQT_OFF - Setting Squelch tail to inactive
-  CS_PTT_OFF - Setting PTT to inactive
-  CS_ID - Play ID
 
-To program the ID callsign, you must map the dah/dit/spaces of your call
-to 'elements' in an int array. A DAH is element '3', a dit is element
-'1' and a space is element '0'. These values are chosen to indicate the
-relative length of the element, with the length of the dit and space
-being set the same. If an an element value is greater than zero, then
-the specified GPIO ID pin is active (H) and if the element value is zero, 
-then the specified GPIO ID pin is (L). This can be used to key an off
-board tone generator gated into the repeater audio path. 
+  * CS_START - Starting state
+  * CS_IDLE - IDLE state, waiting for COR activity
+  * CS_DEBOUNCE_COR_ON - COR active sensed, waiting debounce time.
+  * CS_PTT_ON - Setting PTT to active state
+  * CS_PTT - PTT in active hold state 
+  * CS_DEBOUNCE_COR_OFF - COR dropped, going to Squelch Tail
+  * CS_SQT_ON - Squelch tail activated
+  * CS_SQT_BEEP - Courtesy Beep generating
+  * CS_SQT - Squelch tail hold
+  * CS_SQT_OFF - Setting Squelch tail to inactive
+  * CS_PTT_OFF - Setting PTT to inactive
+  * CS_ID - Play ID
 
-For example, the call 'N0S' would be DAH DIT, space, DAH DAH DAH DAH DAH, 
-space, DAH DAH DAH. Represented as elements this would be:
+As the program runs, various events (changing inputs, timers, etc) cause
+the program to advance from state to state. At each state, actions are 
+taken (outputs changed, etc) abd the next state decided. The program is 
+limited to only those states programmed.
+
+The program layout somewhat resembles an arduino sketch. There is a 
+'setup' function that resembles the similarly named arduino function,
+which is run once at program start, and a 'loop' function that runs 
+continiously.
+
+During execution of the loop section, the cor state is read and a switch
+statement fires a CASE (once for each state) based on the current state. 
+As each state CASE is completed, the next state is defined. In this way
+the program steps from state to state. Some states are transition states
+in which they are executed once and proceed immediately to the next state
+with the next call of loop(). Other states are entered and the program 
+will stay there through multiple calls of loop() until some condition is 
+met or reached and the state changes. Transition states may output
+messages to indicate current machine status.
+
+SETTING UP THE CW ID
+----------------
+To program the CW ID callsign, you must map the dah/dit/spaces of your 
+call to 'elements' in an 'int array'. The values of the 'elements' 
+represent a combination of the duration of the CW ID TONE and KEY. 
+A DAH element is represented by a value of '3', a DIT element is 
+represented by a value of '1' and a SPACE element is represented by 
+'0'. These values are chosen to indicate the relative length of the 
+element, with the length of the dit and space being set the same. If 
+an an element value is greater than zero, then the specified GPIO 
+ID pin is active (H) and if the element value is zero, then the 
+specified GPIO ID pin is (L). This can be used to key an off board 
+tone generator gated into the repeater audio path. 
+
+For example, the call 'N0S' would be DAH DIT, SPACE, DAH DAH DAH DAH DAH, 
+SPACE, DAH DAH DAH. Represented as 'elements' this would be:
 3,1,0,3,3,3,3,3,0,3,3,3,0
 
 So the Elements array would look like this:
@@ -132,5 +187,11 @@ int Elements[] = {
 To set the CW ID Speed, find and change the value of CW_TIMEBASE. This 
 defaults to a value of '50' mS which is about 20 WPM, give or take.
 The duration of the courtesy tone beep is set by BeepDuration, which 
-defaults to '2' in CWID clock increments
+defaults to '2' in CWID clock increments. The two differenet CBEEP
+tone frequencies are held in BEEP_tone1 and BEEP_tone2. These default
+to 1000 and 800 hz, respectivly. These tones are generated by the PWM
+module of the bcm2835 lib and are written out to the pin specified by
+the value of ID_PIN. The CWID Tone value is held in ID_tone. 
+Currently changing these values will require a recompile to make any
+changes active. 
 
