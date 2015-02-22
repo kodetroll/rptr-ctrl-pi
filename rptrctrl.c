@@ -62,6 +62,15 @@
 #include <string.h>
 #include <getopt.h>
 #include <bcm2835.h>
+#include "ini.h"
+
+typedef struct
+{
+    int version;
+    const char* name;
+    const char* email;
+} configuration;
+
 
 #define DEBUG 0
 #define DEBUG_BEEP 0
@@ -898,9 +907,38 @@ void loop() {
 
 }
 
-void LoadConfig(char * cfile) {
+static int handler(void* user, const char* section, const char* name,
+                   const char* value)
+{
+    configuration* pconfig = (configuration*)user;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("protocol", "version")) {
+        pconfig->version = atoi(value);
+    } else if (MATCH("user", "name")) {
+        pconfig->name = strdup(value);
+    } else if (MATCH("user", "email")) {
+        pconfig->email = strdup(value);
+    } else {
+        return 0;  /* unknown section/name, error */
+    }
+    return 1;
+}
+
+int LoadConfig(char * cfile) {
 	
+	configuration config;
+
 	printf("cfgFile: '%s'\n",cfile);
+
+    if (ini_parse(cfile, handler, &config) < 0) {
+        printf("Can't load '%s'\n",cfile);
+        return 0;
+    }
+    printf("Config loaded from '%s': version=%d, name=%s, email=%s\n",
+        cfile,config.version, config.name, config.email);
+
+	return 1
 }
 
 int ParseArgs(int argc, char **argv) {
@@ -993,6 +1031,7 @@ int ParseArgs(int argc, char **argv) {
     }
 }
 
+
 int main(int argc, char **argv)
 {
 	
@@ -1007,7 +1046,8 @@ int main(int argc, char **argv)
 
 	ParseArgs(argc,argv);
 
-	LoadConfig(cfgFile);
+	if (LoadConfig(cfgFile) != 1)
+		printf("Error loading cfile: '%s'\n",cfile);
 	
 	// If you call this, it will not actually access the GPIO
 	// Use for testing
