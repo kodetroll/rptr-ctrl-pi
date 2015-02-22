@@ -659,6 +659,8 @@ void setup() {
 	// Determine the size of the Elements array
 	NumElements = sizeof(Elements)/SIZE_OF_INT;
 	printf("NumElements: %d\n",NumElements);
+
+	printf("Callsign: '%s'\n",Callsign);
 	
 	NumElements = ConvertCall(Callsign);
 	printf("NumElements: %d\n",NumElements);
