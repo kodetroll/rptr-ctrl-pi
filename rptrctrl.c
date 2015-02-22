@@ -1047,7 +1047,7 @@ int main(int argc, char **argv)
 	ParseArgs(argc,argv);
 
 	if (LoadConfig(cfgFile) != 1)
-		printf("Error loading cfile: '%s'\n",cfile);
+		printf("Error loading cfgFile: '%s'\n",cfgFile);
 	
 	// If you call this, it will not actually access the GPIO
 	// Use for testing
