@@ -92,22 +92,27 @@
 // other, comment out the following define to make COR follow
 // NEGATIVE logic
 
-//#define COR_POSITIVE
-#ifdef COR_POSITIVE
-  #define COR_ON   HIGH    // DIO Pin state when COR is active
-  #define COR_OFF  LOW     // DIO Pin state when COR is not active
-#else
-  #define COR_ON   LOW     // DIO Pin state when COR is active
-  #define COR_OFF  HIGH    // DIO Pin state when COR is not active
-#endif
+#define COR_POSITIVE 1
+#define COR_NEGATIVE 0
+
+//#define COR_POS_LOGIC
+//#ifdef COR_POS_LOGIC
+//  #define COR_ON   HIGH    // DIO Pin state when COR is active
+//  #define COR_OFF  LOW     // DIO Pin state when COR is not active
+//#else
+//  #define COR_ON   LOW     // DIO Pin state when COR is active
+//  #define COR_OFF  HIGH    // DIO Pin state when COR is not active
+//#endif
 
 // These values define what the DIO output pin state is when this
 // output is active or not. These two cases are inverses of each
 // other, comment out the following define to make PTT follow
 // NEGATIVE logic
+#define PTT_POSITIVE 1
+#define PTT_NEGATIVE 1
 
-#define PTT_POSITIVE
-#ifdef PTT_POSITIVE
+#define PTT_POS_LOGIC
+#ifdef PTT_POS_LOGIC
   #define PTT_ON   HIGH    // DIO Pin state when PTT is active
   #define PTT_OFF  LOW     // DIO Pin state when PTT is not active
 #else
@@ -182,9 +187,17 @@ int rptrState = 0;  // current state
 int prevState = 0;  // previous state
 
 // various DIO pin states
-int COR_Value;  // current COR value (was bool)
-int pCOR_Value; // previous COR value (was bool)
-int PTT_Value;  // current PTT state (was bool)
+int COR_Value;  // current COR value
+int pCOR_Value; // previous COR value
+int PTT_Value;  // current PTT state
+
+int COR_ON;
+int COR_OFF;
+int PTT_ON;
+int PTT_OFF;
+
+int COR_SENSE;
+int PTT_SENSE;
 
 int Need_ID;   // Whether on not we need to ID (was bool)
 
@@ -258,9 +271,14 @@ void analogWrite(int pin,int value) {
 	// to be written
 	
 	if (DEBUG)
-		printf("DR: 0x%02x: 0x%02x\n",pin,value);
+		printf("AW: 0x%02x: 0x%02x\n",pin,value);
 }
 
+/* This function will turn on the CW ID key
+ * pin and start the PWM timer to enable tone
+ * generation. 
+ * Note: This is NOT a *Blocking call*
+ */
 void tone(int pin, int freq, int duration)	 {
 	// Turn on ID Key
 	digitalWrite(pin, ON);
@@ -269,11 +287,16 @@ void tone(int pin, int freq, int duration)	 {
 		printf("tone: %d, %d, %d\n",pin, freq, duration);
 }
 
+/* This function will turn off the CW ID key
+ * pin and stops the PWM timer to disable tone
+ * generation.
+ * Note: This is NOT a *Blocking call*
+ */
 void noTone(int pin) {
 	digitalWrite(pin, OFF);
 	analogWrite(PWM_PIN,OFF);
 	if (DEBUG_TONE)
-		printf("nTone: %d\n",pin);
+		printf("noTone: %d\n",pin);
 }
 
 /* This function will reset the ID Timer by adding the
@@ -283,10 +306,19 @@ void reset_id_timer() {
 	IDTimer = ticks + IDTimerValue;
 }
 
+
+/* This function will generate a beep of the 
+ * specified duration and frequency using PWM
+ * (if enabled) and turn on the CW ID key
+ * pin for the duration of the tone to enable 
+ * and external tone generator.
+ * Note: This is a *Blocking call*
+ */
 void beep(int freq, int duration) {
 
 	if (DEBUG_BEEP)
 		printf("Beep: %d, %d\n",freq,duration);
+
 	// Start Playing the beep
 	tone(ID_PIN,freq,duration);
 
@@ -299,8 +331,10 @@ void beep(int freq, int duration) {
 		printf("Beep Done!\n");
 }
 
-/* This function will play the courtesy beep. Blocking call */
-void do_cbeep(void) {
+/* This function will play the courtesy beep. 
+ * Note: This is a *Blocking call*
+ */
+void do_cbeep(int btype) {
 
 	// wait 200 mS
 	delay(ID_PTT_DELAY);
@@ -308,7 +342,7 @@ void do_cbeep(void) {
 	// Calculate the Courtesy Tone duration
 	int BeepDelay = BeepDuration * CW_TIMEBASE;
 
-	switch(BEEP_type)
+	switch(btype)
 	{
 		case CBEEP_NONE:
 			break;
@@ -342,7 +376,9 @@ void do_cbeep(void) {
 
 }
 
-/* this function will play the CW ID *BLOCKING CALL* */
+/* this function will play the CW ID, 
+ * Note: This is a *BLOCKING CALL* 
+ */
 void do_ID() {
 	int Element = 0;
 
@@ -384,7 +420,7 @@ void do_ID() {
 	delay(ID_PTT_DELAY);
 
 	// do courtesy beep
-	do_cbeep();
+	do_cbeep(BEEP_type);
 
 	// we give a little PTT hang time
 	delay(ID_PTT_HANG);
@@ -395,6 +431,7 @@ void do_ID() {
 
 	// reset the ID timer
 	reset_id_timer();
+
 	// turn off need id
 	Need_ID = LOW;
 }
@@ -418,9 +455,32 @@ void Show_Start_Info(void)
 	printf("NumElements: %d\n",NumElements);
 }
 
+void setCOR_Sense(int Sense) {
+	if (COR_SENSE == COR_POS_LOGIC) {
+		COR_ON = HIGH
+		COR_OFF = LOW
+	} else {
+		COR_ON = LOW 
+		COR_OFF = HIGH
+	}
+}	
+
+void setPTT_Sense(int Sense) {
+	if (PTT_SENSE == PTT_POS_LOGIC) {
+		PTT_ON = HIGH
+		PTT_OFF = LOW
+	} else {
+		PTT_ON = LOW 
+		PTT_OFF = HIGH
+	}
+}	
+
 /* One time startup init loop */
 void setup() {
-
+	
+	setCOR_Sense(COR_SENSE);
+	setPTT_Sense(PTT_SENSE);
+	
 	// Determine the size of the Elements array
 	NumElements = sizeof(Elements)/SIZE_OF_INT;
 
@@ -456,8 +516,10 @@ void setup() {
 }
 
 void get_cor() {
+	
 	// Read the COR input and store it in a global
 	COR_Value = digitalRead(COR_PIN);
+	
 	// lite the external COR indicator LED
 	if (COR_Value == COR_ON)
 		digitalWrite(COR_LED,HIGH);
@@ -495,7 +557,7 @@ void loop() {
 	// grab the current COR value
 	get_cor();
 
-	// execute the state machibe
+	// execute the state machine
 	switch(rptrState)
 	{
 		case CS_START:
@@ -578,7 +640,7 @@ void loop() {
 
 			case CS_SQT_BEEP:
 			// Do the courtesy beep
-			do_cbeep();
+			do_cbeep(BEEP_type);
 			// jump to CS_SQT to wait for SQT timer
 			prevState = rptrState;
 			rptrState = CS_SQT;
@@ -647,15 +709,33 @@ void loop() {
 
 }
 
+void LoadConfig(char * cfile) {
+	
+	printf("cfgFile: '%s'\n",cfile);
+}
 
 int main(int argc, char **argv)
 {
-	// If you call this, it will not actually access the GPIO
-	// Use for testing
-//	bcm2835_set_debug(1);
+	char * cfgFile;
+	
+	COR_SENSE = COR_POS_LOGIC;
+	PTT_SENSE = PTT_POS_LOGIC;
+
+	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
 	pCOR_Value = COR_Value;
 	PTT_Value = PTT_OFF;
+	ID_PIN = OFF;
+
+	LoadConfig(cfgFile);
+	
+	// If you call this, it will not actually access the GPIO
+	// Use for testing
+//	bcm2835_set_debug(1);
+
+	
+	// Initialize the bcm2835 library, if this fails,
+	// then bail (exit).
 	if (!bcm2835_init())
 		return 1;
 
@@ -664,7 +744,9 @@ int main(int argc, char **argv)
 	setup();	
 
 	// This is the normal operating mode of an Arduino, again we 
-	// have to provide this functionality
+	// have to provide this functionality. Note, this runs forever
+	// we might add a stop feature at some time to allow the controller
+	// to exit and restart.
 	while(1)
 	{
 		loop();
