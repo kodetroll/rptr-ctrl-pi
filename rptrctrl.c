@@ -980,14 +980,14 @@ int LoadConfig(char * cfile) {
 		strcpy(Callsign,config.callsign);
 
     if (strcmp(config.corsense,"Positive") == 0)
-		corsense = COR_POS_LOGIC;
+		COR_SENSE = COR_POS_LOGIC;
 	else
-		corsense = COR_NEG_LOGIC;
+		COR_SENSE = COR_NEG_LOGIC;
 
     if (strcmp(config.pttsense,"Positive") == 0)
-		pttsense = PTT_POS_LOGIC;
+		PTT_SENSE = PTT_POS_LOGIC;
 	else
-		pttsense = PTT_NEG_LOGIC;
+		PTT_SENSE = PTT_NEG_LOGIC;
 
     if (strcmp(config.beeptype,"None") == 0)
 		BEEP_type = CBEEP_NONE;
@@ -1015,6 +1015,8 @@ int LoadConfig(char * cfile) {
     if (config.cwidspeed != "")
 		CW_TIMEBASE = atoi(config.cwidspeed);
 
+	setCOR_Sense(COR_SENSE);
+	setPTT_Sense(PTT_SENSE);
 	return (1);
 }
 
