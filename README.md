@@ -1,10 +1,17 @@
-                       rptrctrl.c
-                       ========== 
+rptrctrl.c
+========== 
 
 DESCRIPTION
 -----------
 A C program to do a 'minimalist' repeater controller using a 
 Raspberry PI and simple interfacing circuitry on the GPIO Port.
+
+HOW TO GET
+----------
+
+To clone this repo, type:
+
+git clone https://github.com/kodetroll/rptr-ctrl-pi.git
 
 DISCUSSION
 ----------
