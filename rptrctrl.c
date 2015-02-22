@@ -979,6 +979,42 @@ int LoadConfig(char * cfile) {
     if (config.callsign != "")
 		strcpy(Callsign,config.callsign);
 
+    if (strcmp(config.corsense,"Positive") == 0)
+		corsense = COR_POS_LOGIC;
+	else
+		corsense = COR_NEG_LOGIC;
+
+    if (strcmp(config.pttsense,"Positive") == 0)
+		pttsense = PTT_POS_LOGIC;
+	else
+		pttsense = PTT_NEG_LOGIC;
+
+    if (strcmp(config.beeptype,"None") == 0)
+		BEEP_type = CBEEP_NONE;
+	else if (strcmp(config.beeptype,"Single") == 0)
+		BEEP_type = CBEEP_SINGLE;
+	else if (strcmp(config.beeptype,"DeDeep") == 0)
+		BEEP_type = CBEEP_DEDEEP;
+	else if (strcmp(config.beeptype,"DeDoop") == 0)
+		BEEP_type = CBEEP_DEDOOP;
+	else if (strcmp(config.beeptype,"DoDeep") == 0)
+		BEEP_type = CBEEP_DODEEP;
+
+    if (config.beepfreq1 != "")
+		BEEP_tone1 = atoi(config.beepfreq1);
+
+    if (config.beepfreq2 != "")
+		BEEP_tone2 = atoi(config.beepfreq2);
+
+    if (config.cwidfreq != "")
+		ID_tone = atoi(config.cwidfreq);
+
+    if (config.beeptime != "")
+		BeepDuration = atoi(config.beeptime);
+
+    if (config.cwidspeed != "")
+		CW_TIMEBASE = atoi(config.cwidspeed);
+
 	return (1);
 }
 
