@@ -90,6 +90,13 @@ typedef struct
 // Blinks on RPi pin GPIO 11
 #define PIN RPI_GPIO_P1_11
 
+#define PWM_MARKSPACE 1
+#define PWM_BALANCED 0
+#define PWM_ON 1
+#define PWM_OFF 0
+#define PWM_RANGE 1024
+#define PWM_DIV 16
+
 //#include "pitches.h"
 
 // Here we define the starting values of the ID and Squelch Tail
@@ -171,6 +178,8 @@ int COR_PIN = 18;		// DIO Pin number for the COR in - 18
 int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
 int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
 int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
+
+int pwm_div = PWM_DIV;
 
 // This is where the callsign is mapped in dah/dit/spaces
 // e.g. N0S would be 3,1,0,3,3,3,3,3,0,3,3,3,0
@@ -299,9 +308,12 @@ int digitalRead(int pin) {
 // provided value using the bcm2835 library
 void analogWrite(int pin,int value) {
 	// to be written
-	
 	if (DEBUG)
 		printf("AW: 0x%02x: 0x%02x\n",pin,value);
+	bcm2835_pwm_set_clock(pwm_div);
+	bcm2835_pwm_set_mode(channel,PWM_BALANCED,PWM_ON);
+	bcm2835_pwm_set_range(PWM_RANGE);
+	bcm2835_pwm_set_data(value);
 }
 
 /* This function will turn on the CW ID key
@@ -312,7 +324,8 @@ void analogWrite(int pin,int value) {
 void tone(int pin, int freq, int duration)	 {
 	// Turn on ID Key
 	digitalWrite(pin, ON);
-	analogWrite(PWM_PIN,1023);
+	analogWrite(PWM_PIN,512);
+	pwm_div = PWM_CLK/freq;
 	if (DEBUG_TONE)
 		printf("tone: %d, %d, %d\n",pin, freq, duration);
 }
@@ -1126,6 +1139,7 @@ int main(int argc, char **argv)
 	pCOR_Value = COR_Value;
 	PTT_Value = PTT_OFF;
 	ID_PIN = OFF;
+	pwm_div = PWM_DIV;
 
 	if (LoadConfig(cfgFile) != 1)
 		printf("Error loading cfgFile: '%s'\n",cfgFile);
