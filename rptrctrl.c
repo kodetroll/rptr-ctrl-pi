@@ -96,6 +96,7 @@ typedef struct
 #define PWM_OFF 0
 #define PWM_RANGE 1024
 #define PWM_DIV 16
+#define PWM_CH 0
 
 //#include "pitches.h"
 
@@ -311,9 +312,9 @@ void analogWrite(int pin,int value) {
 	if (DEBUG)
 		printf("AW: 0x%02x: 0x%02x\n",pin,value);
 	bcm2835_pwm_set_clock(pwm_div);
-	bcm2835_pwm_set_mode(channel,PWM_BALANCED,PWM_ON);
-	bcm2835_pwm_set_range(PWM_RANGE);
-	bcm2835_pwm_set_data(value);
+	bcm2835_pwm_set_mode(PWM_CH, PWM_BALANCED, PWM_ON);
+	bcm2835_pwm_set_range(PWM_CH, PWM_RANGE);
+	bcm2835_pwm_set_data(PWM_CH, value);
 }
 
 /* This function will turn on the CW ID key
