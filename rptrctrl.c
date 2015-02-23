@@ -97,6 +97,7 @@ typedef struct
 #define PWM_RANGE 1024
 #define PWM_DIV 16
 #define PWM_CH 0
+#define PWM_CLK 19200000
 
 //#include "pitches.h"
 
