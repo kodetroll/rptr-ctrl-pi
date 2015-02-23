@@ -1085,6 +1085,8 @@ int ParseArgs(int argc, char **argv) {
 				//printf ("option -f with value `%s'\n", optarg);
 				strcpy(cfgFile,optarg);
 				printf("Setting cfgFile: '%s'\n",cfgFile);
+				if (LoadConfig(cfgFile) != 1)
+					printf("Error loading cfgFile: '%s'\n",cfgFile);
 				break;
 
 			case '?':
@@ -1125,10 +1127,10 @@ int main(int argc, char **argv)
 	PTT_Value = PTT_OFF;
 	ID_PIN = OFF;
 
-	ParseArgs(argc,argv);
-
 	if (LoadConfig(cfgFile) != 1)
 		printf("Error loading cfgFile: '%s'\n",cfgFile);
+
+	ParseArgs(argc,argv);
 	
 	// If you call this, it will not actually access the GPIO
 	// Use for testing
