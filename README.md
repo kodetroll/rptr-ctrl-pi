@@ -102,39 +102,44 @@ Other misc timer values (specified in mS):
  * COR_DEBOUNCE_DELAY - Amount of time COR must be present before 
    being counted as valid, defaults to 50 mS
 
-COR and PTT logic can be specified as POSITIVE or NEGATIVE; there
-are defines (COR_POSITIVE, etc) to explicitly set this. The 
-defaults are COR_NEGATIVE (H to L transition, L active), and 
-PTT_POSITIVE (L to H transition, H active). If these are changed,
-the application must be recompiled.
+COR and PTT logic sense can be specified as POSITIVE or NEGATIVE; there
+are INI file settings to define these without recompiling. The 
+defaults are COR_NEG_LOGIC (H to L transition, L active), and 
+PTT_POS_LOGIC (L to H transition, H active). If the defaults are changed
+in the sources, the application must be recompiled. However, the value
+read from the config file will override the defaults.
 
-You can specify 5 different types of courtesy beep (CBEEP) by changing
-the value of the CBEEP_TYPE compiler define . The possible values are:
-are:
-
-| Type | Description |
-| ---- | ----------- |
-| CBEEP_NONE | No CBEEP |
-| CBEEP_SINGLE | Single tone |
-| CBEEP_DEDOOP | Two tone, hi to low frequency |
-| CBEEP_DODEEP | Two tone, low to hi frequency |
-| CBEEP_DEDEEP | Two tone, same frequency |
-
-The default is CBEEP_SINGLE. The software must be recompiled for any
-CBEEP changes to take effect.
+```
+[CONTROL]
+CORSense=Negative
+PTTSense=Positive
+PTTPin=17
+CORPin=18
+CORLEDPin=22
+CWIDPin=21
+PWMPin=18
+IDPTTDelay=200
+IDPTTHang=500 
+CWMinDelay=30
+CORDebounceDelay=50
+```
 
 The GPIO pins that control COR/PTT/COR INDICATION & CWID are definable
 as well. The defaults are defined as follows:
+
 ```
-PTT = 17; // DIO Pin number for the PTT out - 9
-COR = 18; // DIO Pin number for the COR in - 12
-CORLED = 22; // DIO Pin number for the COR indicator LED - 11
-ID_PIN = 21; // DIO Pin for the ID Audio output tone
+// This is where we define what DIO PINs map to what functions
+int PTT_PIN = 17;		// DIO Pin number for the PTT out - 17
+int COR_PIN = 18;		// DIO Pin number for the COR in - 18
+int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
+int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
+int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
 ```
+
 Change these values to map these functions to alternate GPIO pins.
-These are variables, so they can be overridden or changed once the 
-applicaiton starts, however, there is currently no way to do this.
-If the defaults are changed, the application must be recompiled.
+These are variables, so they can be overridden by chages to the 
+config file. However, if the defaults are changed, the application 
+must be recompiled.
 
 HOW IT WORKS
 ------------
@@ -178,43 +183,72 @@ met or reached and the state changes. Transition states may output
 messages to STDOUT indicating current machine status.
 
 SETTING UP THE CW ID
-----------------
-To program the CW ID callsign, simply change the value of DEFAULT_CALLSIGN
-as defined in the source header. All conversion to 'Elements' is taken care 
-of automagically. 
-For historical reasons, the old way of programming the CWID was:
-You must map the dah/dit/spaces of your call to 'elements' in an 'int array'. 
-The values of the 'elements' represent a combination of the duration of the 
-CW ID TONE and KEY. A DAH element is represented by a value of '3', a DIT 
-element is represented by a value of '1' and a SPACE element is represented 
-by '0'. These values are chosen to indicate the relative length of the element, 
-with the length of the dit and space being set the same. If an an element 
-value is greater than zero, then the specified GPIO ID pin is active (H) 
-and if the element value is zero, then the specified GPIO ID pin is (L). 
-This can be used to key an off board tone generator gated into the 
-repeater audio path. 
+--------------------
+To permanently program the CW ID callsign, simply change the value of 
+DEFAULT_CALLSIGN as defined in the source header. 
 
-For example, the call 'N0S' would be DAH DIT, SPACE, DAH DAH DAH DAH DAH, 
-SPACE, DAH DAH DAH. Represented as 'elements' this would be:
-3,1,0,3,3,3,3,3,0,3,3,3,0
+Note: All conversion to 'Elements' is taken care of automagically. 
 
-So the Elements array would look like this:
+With the version that supports an external configuratio file, you can
+edit the supplied example file 'rptrctrl.cfg', replacing the contents 
+of the file to suityour installation. For example:
+ 
 ```
-int Elements[] = {
-  3,1,0,3,3,3,3,3,0,3,3,3,0
-};
+[CWID]
+Callsign=N0S
+
+[TONES]
+CWIDFreq=1200
+CBEEPtype=DeDoop
+CBEEPFreq1=1000
+CBEEPFreq2=800
+CBEEPTimeDuration=2
+CWIDClockTime=50
 ```
-To set the CW ID Speed, find and change the value of CW_TIMEBASE. This 
-defaults to a value of '50' mS which is about 20 WPM, give or take.
-The duration of the courtesy tone beep is set by BeepDuration, which 
-defaults to '2' in CWID clock increments. The two differenet CBEEP
-tone frequencies are held in BEEP_tone1 and BEEP_tone2. These default
-to 1000 and 800 hz, respectivly. The CWID Tone value is held in ID_tone,
-and defaults to 1200 hz. These tones are generated by the PWM module of 
-the bcm2835 lib and are written out to the pin specified by the value 
-of ID_PIN. This signal can be mixed or injected into the repeater audio
-path. Currently, changing these values will require a recompile to make 
-any changes active.
+
+To set the CW ID Speed, find and change the value of CWIDClockTime. 
+This will set the value of CW_TIMEBASE at runtime. If this value is
+missing from, it will default to a value of '50' mS which is about 
+20 WPM, give or take.
+
+The type of courtesy beep is set by the value of CBEEPtype, which
+sets the value of BEEP_type at runtime. You can specify 5 different 
+types of courtesy beep (CBEEP) by changing the value of the 
+CBEEPType config value. The possible values are:
+are:
+
+| Type | Description |
+| ---- | ----------- |
+| CBEEP_NONE | No CBEEP |
+| CBEEP_SINGLE | Single tone |
+| CBEEP_DEDOOP | Two tone, hi to low frequency |
+| CBEEP_DODEEP | Two tone, low to hi frequency |
+| CBEEP_DEDEEP | Two tone, same frequency |
+
+The default is CBEEP_SINGLE. The software must be recompiled for any
+changes to the default to take effect.
+
+The duration of the courtesy tone beep is set by CBEEPTimeDuration
+which sets the value of BeepDuration at runtime. This value defaults 
+to '2' (in CWID clock increments) or 100 mS.
+ 
+The two differenet CBEEP tone frequencies are set by changing the
+values of CBEEPFreq1 and CBEEPFreq2. These in turn set the runtime
+values of BEEP_tone1 and BEEP_tone2. These default to 1000 and 800 
+hz, respectivly. 
+
+The CWID Tone value is set with CWIDFreq which sets the runtime
+value of ID_tone, and defaults to 1200 hz. 
+
+These tones are generated by the PWM module of the bcm2835 lib and 
+are written out to the pin specified by the value of PWM_PIN. This 
+signal can be mixed or injected into the repeater audio path. In 
+addition, an external tone generator can be keyed by using the ID_PIN
+GPIO output. 
+
+Currently, changing these values no longer requires a recompile to make 
+any changes active. Merely setting them in the config file is all
+that is required.
 
 
 
