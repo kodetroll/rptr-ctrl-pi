@@ -1071,8 +1071,9 @@ int ParseArgs(int argc, char **argv) {
 
 			case 'c':
 				// load callsign
-				printf ("option -c with value `%s'\n", optarg);
+				//printf ("option -c with value `%s'\n", optarg);
 				strcpy(Callsign,optarg);
+				printf("Setting Callsign: '%s'\n",Callsign);
 				break;
 
 			case 'd':
@@ -1081,8 +1082,9 @@ int ParseArgs(int argc, char **argv) {
 
 			case 'f':
 				// load alternate config filename
-				printf ("option -f with value `%s'\n", optarg);
+				//printf ("option -f with value `%s'\n", optarg);
 				strcpy(cfgFile,optarg);
+				printf("Setting cfgFile: '%s'\n",cfgFile);
 				break;
 
 			case '?':
