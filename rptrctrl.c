@@ -72,7 +72,7 @@
 // 17.21.22
 // This is where we define what DIO PINs map to what functions
 int PTT_PIN = 17;		// DIO Pin number for the PTT out - 17
-int COR_PIN = 18;		// DIO Pin number for the COR in - 18
+int COR_PIN = 27;		// DIO Pin number for the COR in - 18
 int COR_LED = 22;		// DIO Pin number for the undebounced COR indicator LED - 22
 int ID_PIN = 21;		// DIO Pin for the ID Audio output tone
 int PWM_PIN = 18;		// PWM Pin for the ID Audio output tone
@@ -133,7 +133,7 @@ int PTT_OFF;
 int Need_ID;   // Whether on not we need to ID (was bool)
 
 /* Flag set by ‘--verbose’. */
-static int verbose_flag;
+static int verbose;
 
 /* This functions returns the current time in seconds from start
  * of UNIX epoch
