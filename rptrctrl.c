@@ -1093,6 +1093,7 @@ int ParseArgs(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
+    debug = DEBUG;
 
 	strcpy(Callsign,DEFAULT_CALLSIGN);
 	strcpy(cfgFile,DEFAULT_CFGFILE);
