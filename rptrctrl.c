@@ -131,6 +131,9 @@ int Need_ID;   // Whether on not we need to ID (was bool)
 /* Flag set by ‘--verbose’. */
 static int verbose;
 
+/* Flag set by ‘--debug’. */
+static int debug;
+
 /* This functions returns the current time in seconds from start
  * of UNIX epoch
  */
@@ -160,7 +163,7 @@ void pinMode(int pin,int value) {
 		bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_UP);
 	}
 
-	if (DEBUG)
+	if (debug)
 	{
 		if (value == OUTPUT)
 			printf("PM: 0x%02x: 0x%02x [OUTPUT]\n",pin,value);
@@ -174,7 +177,7 @@ void pinMode(int pin,int value) {
  * provided value using the bcm2835 library
  */
 void digitalWrite(int pin,int value) {
-	if (DEBUG)
+	if (debug)
 		printf("DW: 0x%02x: 0x%02x\n",pin,value);
 
 	bcm2835_gpio_write(pin, value);
@@ -187,7 +190,7 @@ void digitalWrite(int pin,int value) {
 int digitalRead(int pin) {
 	int value = 0;
 	value = bcm2835_gpio_lev(pin);
-	if (DEBUG)
+	if (debug)
 		printf("DR: 0x%02x: 0x%02x\n",pin,value);
 	return(value);
 }
@@ -198,7 +201,7 @@ int digitalRead(int pin) {
  */
 void analogWrite(int pin,int value) {
 	// to be written
-	if (DEBUG)
+	if (debug)
 		printf("AW: 0x%02x: 0x%02x\n",pin,value);
 	bcm2835_pwm_set_clock(pwm_div);
 	bcm2835_pwm_set_mode(PWM_CH, PWM_BALANCED, PWM_ON);
@@ -330,12 +333,12 @@ void do_ID(void) {
 	// to quit playing.
 	int InterElementDelay = CW_TIMEBASE * 1.3;
 
-	if (DEBUG)
+	if (debug)
 		printf("NumElements: %d\n",NumElements);
 
 	// We Play the ID elements
 	for (Element = 0; Element < NumElements; Element++) {
-		if (DEBUG)
+		if (debug)
 			printf("Element: %d, Elements[%d]: %d\n",Element,Element,Elements[Element]);
 		if (Elements[Element] != 0) {
 			tone(ID_PIN,ID_tone,Elements[Element] * CW_TIMEBASE);
@@ -892,7 +895,7 @@ int LoadConfig(char * cfile) {
     if (verbose)
         printf("Config loaded from '%s'\n",cfile);
 
-    if (debug)
+	if (debug)
     {
         printf("version: %d\n", config.version);
         printf("name: '%s'\n", config.name);
@@ -999,8 +1002,10 @@ int ParseArgs(int argc, char **argv) {
 		static struct option long_options[] =
         {
 			/* These options set a flag. */
-			{"verbose", no_argument,       &verbose_flag, 1},
-			{"brief",   no_argument,       &verbose_flag, 0},
+			{"verbose", no_argument,  &verbose, 1},
+			{"brief",   no_argument,  &verbose, 0},
+			{"debug",   no_argument,    &debug, 1},
+			{"nodebug", no_argument,    &debug, 0},
 			/* These options don’t set a flag.
                We distinguish them by their indices. */
 			{"version", no_argument,       0, 'v'},
@@ -1071,6 +1076,9 @@ int ParseArgs(int argc, char **argv) {
 	   we report the final status resulting from them. */
 	if (verbose)
 		puts ("verbose flag is set");
+
+	if (debug)
+		puts ("debug flag is set");
 
 	/* Print any remaining command line arguments (not options). */
 	if (optind < argc)

@@ -243,6 +243,9 @@ enum BeepTypes {
 /* Flag set by ‘--verbose’. */
 static int verbose;
 
+/* Flag set by ‘--debug’. */
+static int debug;
+
 //~~~~~~ abstraction of arduino dio commands
 #define OUTPUT 1
 #define INPUT 0
