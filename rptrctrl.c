@@ -64,8 +64,6 @@
 #include <bcm2835.h>
 #include "ini.h"
 #include "rptrctrl.h"
-
-
 //#include "pitches.h"
 
 
@@ -98,8 +96,6 @@ int BEEP_tone2 = 800;     // Audio frequency of Courtesy Beep 2
 int BeepDuration = 2;     // Courtesy Tone length (in CWID increments)
 int CW_TIMEBASE = 50;     // CW ID Speed (This is a delay in mS)
 // (50 is about 20wpm)
-
-//#define CBEEP_TYPE  CBEEP_SINGLE
 
 // Timer definitions
 time_t ticks;            // Current elapsed time in seconds
@@ -893,20 +889,24 @@ int LoadConfig(char * cfile) {
         printf("Can't load '%s'\n",cfile);
         return (0);
     }
-    printf("Config loaded from '%s'\n",cfile);
+    if (verbose)
+        printf("Config loaded from '%s'\n",cfile);
 
-    printf("version: %d\n", config.version);
-    printf("name: '%s'\n", config.name);
-    printf("email: '%s'\n", config.email);
-    printf("callsign: '%s'\n", config.callsign);
-    printf("corsense: '%s'\n", config.corsense);
-    printf("pttsense: '%s'\n", config.pttsense);
-    printf("cwidfreq: '%s'\n", config.cwidfreq);
-    printf("beeptype: '%s'\n", config.beeptype);
-    printf("beepfreq1: '%s'\n", config.beepfreq1);
-    printf("beepfreq2: '%s'\n", config.beepfreq2);
-    printf("beeptime: '%s'\n", config.beeptime);
-    printf("cwidspeed: '%s'\n", config.cwidspeed);
+    if (debug)
+    {
+        printf("version: %d\n", config.version);
+        printf("name: '%s'\n", config.name);
+        printf("email: '%s'\n", config.email);
+        printf("callsign: '%s'\n", config.callsign);
+        printf("corsense: '%s'\n", config.corsense);
+        printf("pttsense: '%s'\n", config.pttsense);
+        printf("cwidfreq: '%s'\n", config.cwidfreq);
+        printf("beeptype: '%s'\n", config.beeptype);
+        printf("beepfreq1: '%s'\n", config.beepfreq1);
+        printf("beepfreq2: '%s'\n", config.beepfreq2);
+        printf("beeptime: '%s'\n", config.beeptime);
+        printf("cwidspeed: '%s'\n", config.cwidspeed);
+    }
 
     if (config.callsign != "")
 		strcpy(Callsign,config.callsign);
@@ -1069,7 +1069,7 @@ int ParseArgs(int argc, char **argv) {
 	/* Instead of reporting ‘--verbose’
        and ‘--brief’ as they are encountered,
 	   we report the final status resulting from them. */
-	if (verbose_flag)
+	if (verbose)
 		puts ("verbose flag is set");
 
 	/* Print any remaining command line arguments (not options). */

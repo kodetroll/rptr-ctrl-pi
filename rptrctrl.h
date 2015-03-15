@@ -102,8 +102,6 @@ typedef struct
 #define PWM_CH 0
 #define PWM_CLK 19200000
 
-//#include "pitches.h"
-
 // Here we define the starting values of the ID and Squelch Tail
 // Timers
 #define DEFAULT_ID_TIMER 600       // In Seconds
@@ -243,7 +241,7 @@ enum BeepTypes {
 //int Need_ID;   // Whether on not we need to ID (was bool)
 
 /* Flag set by ‘--verbose’. */
-static int verbose_flag;
+static int verbose;
 
 //~~~~~~ abstraction of arduino dio commands
 #define OUTPUT 1
