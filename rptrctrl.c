@@ -1033,10 +1033,12 @@ int ParseArgs(int argc, char **argv) {
 
 			case 'v':
 				version();
+				abort();
 				break;
 
 			case 'h':
 				usage(argv[0]);
+				abort();
 				break;
 
 			case 'c':
