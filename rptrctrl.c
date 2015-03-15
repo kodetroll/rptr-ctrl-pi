@@ -63,115 +63,11 @@
 #include <getopt.h>
 #include <bcm2835.h>
 #include "ini.h"
+#include "rptrctrl.h"
 
-typedef struct
-{
-    int version;
-    const char* name;
-    const char* email;
-    const char* callsign;
-    const char* corsense;
-    const char* pttsense;
-    const char* cwidspeed;
-    const char* cwidfreq;
-    const char* beeptype;
-    const char* beepfreq1;
-    const char* beepfreq2;
-    const char* beeptime;
-} configuration;
-
-
-#define DEBUG 0
-#define DEBUG_BEEP 0
-#define DEBUG_TONE 0
-
-#define SIZE_OF_INT 4
-
-// Blinks on RPi pin GPIO 11
-#define PIN RPI_GPIO_P1_11
-
-#define PWM_MARKSPACE 1
-#define PWM_BALANCED 0
-#define PWM_ON 1
-#define PWM_OFF 0
-#define PWM_RANGE 1024
-#define PWM_DIV 16
-#define PWM_CH 0
-#define PWM_CLK 19200000
 
 //#include "pitches.h"
 
-// Here we define the starting values of the ID and Squelch Tail
-// Timers
-#define DEFAULT_ID_TIMER 600       // In Seconds
-#define DEFAULT_SQ_TIMER 1         // In Seconds
-
-// other misc timer values
-#define ID_PTT_DELAY  200       // in mS
-#define ID_PTT_HANG   500       // in mS
-#define CW_MIN_DELAY  30        // in mS
-#define COR_DEBOUNCE_DELAY  50  // in mS
-
-#define OFF LOW
-#define ON HIGH
-
-// These values define what the DIO input pin state is when this
-// input is active or not. These two cases are inverses of each
-// other, comment out the following define to make COR follow
-// NEGATIVE logic
-
-#define COR_POS_LOGIC 1
-#define COR_NEG_LOGIC 0
-
-//#define COR_POS_LOGIC
-//#ifdef COR_POS_LOGIC
-//  #define COR_ON   HIGH    // DIO Pin state when COR is active
-//  #define COR_OFF  LOW     // DIO Pin state when COR is not active
-//#else
-//  #define COR_ON   LOW     // DIO Pin state when COR is active
-//  #define COR_OFF  HIGH    // DIO Pin state when COR is not active
-//#endif
-
-// These values define what the DIO output pin state is when this
-// output is active or not. These two cases are inverses of each
-// other, comment out the following define to make PTT follow
-// NEGATIVE logic
-
-#define PTT_POS_LOGIC 1
-#define PTT_NEG_LOGIC 0
-
-//#define PTT_POS_LOGIC
-//#ifdef PTT_POS_LOGIC
-//  #define PTT_ON   HIGH    // DIO Pin state when PTT is active
-//  #define PTT_OFF  LOW     // DIO Pin state when PTT is not active
-//#else
-//  #define PTT_ON   LOW     // DIO Pin state when PTT is active
-//  #define PTT_OFF  HIGH    // DIO Pin state when PTT is not active
-//#endif
-
-// Master enum of state machine states
-enum CtrlStates {
-  CS_START,
-  CS_IDLE,
-  CS_DEBOUNCE_COR_ON,
-  CS_PTT_ON,
-  CS_PTT,
-  CS_DEBOUNCE_COR_OFF,
-  CS_SQT_ON,
-  CS_SQT_BEEP,
-  CS_SQT,
-  CS_SQT_OFF,
-  CS_PTT_OFF,
-  CS_ID
-};
-
-enum BeepTypes {
-  CBEEP_NONE,
-  CBEEP_SINGLE,
-  CBEEP_DEDOOP,
-  CBEEP_DODEEP,
-  CBEEP_DEDEEP
-};
 
 // 17.21.22
 // This is where we define what DIO PINs map to what functions
@@ -192,9 +88,6 @@ int Elements[200];
 char Callsign[30];
 
 char cfgFile[50];
-
-#define DEFAULT_CALLSIGN "KB4OID"
-#define DEFAULT_CFGFILE "rptrctrl.cfg"
 
 // Here's where we define some of the CW ID characteristics
 int NumElements = 0;     // This is the number of elements in the ID
@@ -242,14 +135,9 @@ int Need_ID;   // Whether on not we need to ID (was bool)
 /* Flag set by ‘--verbose’. */
 static int verbose_flag;
 
-//~~~~~~ abstraction of arduino dio commands
-#define OUTPUT 1
-#define INPUT 0
-//#define HIGH 1
-//#define LOW 0
-
-// This functions returns the current time in seconds from start
-// of UNIX epoch
+/* This functions returns the current time in seconds from start
+ * of UNIX epoch
+ */
 time_t now(void) {
 
 	time_t timer;
@@ -259,9 +147,10 @@ time_t now(void) {
 	return(timer);
 }
 
-// This function emulates the arduino pinMode function,
-// setting the specified pin to the provided mode using
-// the bcm2835 library
+/* This function emulates the arduino pinMode function,
+ * setting the specified pin to the provided mode using
+ * the bcm2835 library
+ */
 void pinMode(int pin,int value) {
 	// Set the pin to be an output
 	if (value == OUTPUT)
@@ -284,9 +173,10 @@ void pinMode(int pin,int value) {
 	}
 }
 
-// This function emulates the arduino digitalWrite
-// function, setting the specified pin to the 
-// provided value using the bcm2835 library
+/* This function emulates the arduino digitalWrite
+ * function, setting the specified pin to the
+ * provided value using the bcm2835 library
+ */
 void digitalWrite(int pin,int value) {
 	if (DEBUG)
 		printf("DW: 0x%02x: 0x%02x\n",pin,value);
@@ -294,9 +184,10 @@ void digitalWrite(int pin,int value) {
 	bcm2835_gpio_write(pin, value);
 }
 
-// This function emulates the arduino digitalRead
-// function, returning the value of the specified 
-// pin using the bcm2835 library
+/* This function emulates the arduino digitalRead
+ * function, returning the value of the specified
+ * pin using the bcm2835 library
+ */
 int digitalRead(int pin) {
 	int value = 0;
 	value = bcm2835_gpio_lev(pin);
@@ -305,9 +196,10 @@ int digitalRead(int pin) {
 	return(value);
 }
 
-// This function emulates the arduino analogWrite
-// function, setting the specified PWM pin to the 
-// provided value using the bcm2835 library
+/* This function emulates the arduino analogWrite
+ * function, setting the specified PWM pin to the
+ * provided value using the bcm2835 library
+ */
 void analogWrite(int pin,int value) {
 	// to be written
 	if (DEBUG)
@@ -320,7 +212,7 @@ void analogWrite(int pin,int value) {
 
 /* This function will turn on the CW ID key
  * pin and start the PWM timer to enable tone
- * generation. 
+ * generation.
  * Note: This is NOT a *Blocking call*
  */
 void tone(int pin, int freq, int duration)	 {
@@ -347,15 +239,15 @@ void noTone(int pin) {
 /* This function will reset the ID Timer by adding the
  * timer interval value to the current elapsed time
  */
-void reset_id_timer() {
+void reset_id_timer(void) {
 	IDTimer = ticks + IDTimerValue;
 }
 
 
-/* This function will generate a beep of the 
+/* This function will generate a beep of the
  * specified duration and frequency using PWM
  * (if enabled) and turn on the CW ID key
- * pin for the duration of the tone to enable 
+ * pin for the duration of the tone to enable
  * and external tone generator.
  * Note: This is a *Blocking call*
  */
@@ -376,7 +268,7 @@ void beep(int freq, int duration) {
 		printf("Beep Done!\n");
 }
 
-/* This function will play the courtesy beep. 
+/* This function will play the courtesy beep.
  * Note: This is a *Blocking call*
  */
 void do_cbeep(int btype) {
@@ -421,10 +313,10 @@ void do_cbeep(int btype) {
 
 }
 
-/* this function will play the CW ID, 
- * Note: This is a *BLOCKING CALL* 
+/* this function will play the CW ID,
+ * Note: This is a *BLOCKING CALL*
  */
-void do_ID() {
+void do_ID(void) {
 	int Element = 0;
 
 	// exit if we do not need to ID yet
@@ -484,7 +376,7 @@ void do_ID() {
 /* This function will print current repeater operating states
  * to the serial port. For debuggin purposes only.
  */
-void show_state_info() {
+void show_state_info(void) {
 	printf ("t: %d:state:%d,%d,%d:C:%d,%d:P:%d\n",now(),prevState, rptrState,nextState,COR_Value,pCOR_Value,PTT_Value);
 }
 
@@ -504,10 +396,14 @@ void Show_Start_Info(void)
 	for (i=0;i<NumElements;i++) {
 		printf("%d,",Elements[i]);
 	}
-	printf("\n");}
+	printf("\n");
+}
 
+/* Sets the COR Sense (COR ON as HIGH or LOW)
+ * to the indicated sense.
+ */
 void setCOR_Sense(int Sense) {
-	
+
 	if (COR_SENSE == COR_POS_LOGIC) {
 		COR_ON = HIGH;
 		COR_OFF = LOW;
@@ -515,8 +411,11 @@ void setCOR_Sense(int Sense) {
 		COR_ON = LOW;
 		COR_OFF = HIGH;
 	}
-}	
+}
 
+/* Sets the PTT Sense (PTT ON as HIGH or LOW)
+ * to the indicated sense.
+ */
 void setPTT_Sense(int Sense) {
 	if (PTT_SENSE == PTT_POS_LOGIC) {
 		PTT_ON = HIGH;
@@ -525,8 +424,11 @@ void setPTT_Sense(int Sense) {
 		PTT_ON = LOW;
 		PTT_OFF = HIGH;
 	}
-}	
+}
 
+/* Converts an ASCII character to a string of numbers
+ * representing the Morse elements of the character.
+ */
 char* cvt2morse(char c) {
 	switch(c)
 	{
@@ -670,11 +572,15 @@ char* cvt2morse(char c) {
 	}
 }
 
+/* Converts call sign ASCII string to 'elements' and
+ * stores this in the global Elements array for later
+ * playback.
+ */
 int ConvertCall(char * call) {
 	int i;
 	char l[200];
 	memset(l,0x00,sizeof(l));
-	
+
 //	printf("call: '%s'\n",call);
 	for (i=0;i<strlen(call);i++) {
 		strcat(l,cvt2morse(call[i]));
@@ -692,17 +598,17 @@ int ConvertCall(char * call) {
 }
 
 /* One time startup init loop */
-void setup() {
-	
+void setup(void) {
+
 	setCOR_Sense(COR_SENSE);
 	setPTT_Sense(PTT_SENSE);
-	
+
 	// Determine the size of the Elements array
 //	NumElements = sizeof(Elements)/SIZE_OF_INT;
 //	printf("NumElements: %d\n",NumElements);
 
 //	printf("Callsign: '%s'\n",Callsign);
-	
+
 	NumElements = ConvertCall(Callsign);
 //	printf("NumElements: %d\n",NumElements);
 
@@ -737,11 +643,15 @@ void setup() {
 	Need_ID = HIGH;
 }
 
-void get_cor() {
-	
+/* Retrieves the current COR sense from the COR PIN
+ * saves the value to the global COR ver and lites
+ * COR indicator LED
+ */
+void get_cor(void) {
+
 	// Read the COR input and store it in a global
 	COR_Value = digitalRead(COR_PIN);
-	
+
 	// lite the external COR indicator LED
 	if (COR_Value == COR_ON)
 		digitalWrite(COR_LED,HIGH);
@@ -749,12 +659,16 @@ void get_cor() {
 		digitalWrite(COR_LED,LOW);
 }
 
+/* Prints a message to the screen or log
+ */
 void show_msg(char * buf) {
 
 	printf ("[%d] %s\n",now(),buf);
 }
 
-void loop1() {
+/* Test loop
+ */
+void loop1(void) {
 
 	// grab the current elapsed time
 	ticks = now();
@@ -771,7 +685,9 @@ void loop1() {
 
 }
 
-void loop() {
+/* Master repeater state machine
+ */
+void loop(void) {
 
 	// grab the current elapsed time
 	ticks = now();
@@ -793,7 +709,7 @@ void loop() {
 			// wait for COR to activate, then jump to debounce
 			if (rptrState != prevState)
 				show_msg("IDLE");
-	
+
 			prevState = rptrState;
 			if (COR_Value == COR_ON) {
 				pCOR_Value = COR_Value;
@@ -930,7 +846,8 @@ void loop() {
 	pCOR_Value = COR_Value;
 
 }
-
+/* Handler for parsing config file lines into config items
+ */
 static int handler(void* user, const char* section, const char* name,
                    const char* value)
 {
@@ -967,7 +884,7 @@ static int handler(void* user, const char* section, const char* name,
 }
 
 int LoadConfig(char * cfile) {
-	
+
 	configuration config;
 
 	printf("cfgFile: '%s'\n",cfile);
@@ -977,9 +894,9 @@ int LoadConfig(char * cfile) {
         return (0);
     }
     printf("Config loaded from '%s'\n",cfile);
-    
-    printf("version: %d\n", config.version); 
-    printf("name: '%s'\n", config.name); 
+
+    printf("version: %d\n", config.version);
+    printf("name: '%s'\n", config.name);
     printf("email: '%s'\n", config.email);
     printf("callsign: '%s'\n", config.callsign);
     printf("corsense: '%s'\n", config.corsense);
@@ -1035,6 +952,44 @@ int LoadConfig(char * cfile) {
 	return (1);
 }
 
+/* Print the program header info
+ */
+void header(char * name)
+{
+    printf("%s - A Raspberry PI Repeater controller for user space.\n",name);
+}
+
+/* Print the copyright info
+ */
+void copyright(void)
+{
+    printf("Copyright (C) 2013-2015 KB4OID Labs, A Division of Kodetroll Heavy Industries.\n");
+}
+
+/* Print the version info
+ */
+void version(void)
+{
+    printf("Version %d.%d\n",VER_MAJOR,VER_MINOR);
+}
+/* Print tbe usage (help) text
+ */
+void usage(char * name)
+{
+    printf("\n");
+    printf("Usage: \n");
+    printf("%s <OPTIONS>\n",name);
+    printf("   --verbose      Turns on verbose reporting.\n");
+	printf("   --brief        Turns off verbose reporting.\n");
+	printf("   --version, -v  Prints version info and exits.\n");
+	printf("   --help, -h     Prints this info and exits.\n");
+	printf("   --call <CALL>  Sets callsign\n");
+	printf("   --file <FILE>  Sets alternate config file name\n");
+    printf("\n");
+}
+
+/* Parse command line args and set globals
+ */
 int ParseArgs(int argc, char **argv) {
 
 	int c;
@@ -1048,17 +1003,16 @@ int ParseArgs(int argc, char **argv) {
 			{"brief",   no_argument,       &verbose_flag, 0},
 			/* These options don’t set a flag.
                We distinguish them by their indices. */
-//			{"add",     no_argument,       0, 'a'},
-//			{"append",  no_argument,       0, 'b'},
-//			{"delete",  required_argument, 0, 'd'},
-			{"call",  required_argument, 0, 'c'},
+			{"version", no_argument,       0, 'v'},
+			{"help",    no_argument,       0, 'h'},
+			{"call",    required_argument, 0, 'c'},
 			{"file",    required_argument, 0, 'f'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "c:f:",
+		c = getopt_long (argc, argv, "vhc:f:",
                        long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -1076,12 +1030,13 @@ int ParseArgs(int argc, char **argv) {
 					printf (" with arg %s", optarg);
 				printf ("\n");
 				break;
-			case 'a':
-				puts ("option -a\n");
+
+			case 'v':
+				version();
 				break;
 
-			case 'b':
-				puts ("option -b\n");
+			case 'h':
+				usage(argv[0]);
 				break;
 
 			case 'c':
@@ -1089,10 +1044,6 @@ int ParseArgs(int argc, char **argv) {
 				//printf ("option -c with value `%s'\n", optarg);
 				strcpy(Callsign,optarg);
 				printf("Setting Callsign: '%s'\n",Callsign);
-				break;
-
-			case 'd':
-				printf ("option -d with value `%s'\n", optarg);
 				break;
 
 			case 'f':
@@ -1132,10 +1083,10 @@ int ParseArgs(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
-	
+
 	strcpy(Callsign,DEFAULT_CALLSIGN);
 	strcpy(cfgFile,DEFAULT_CFGFILE);
-	
+
 	// Set starting points for the GPIO pins.
 	COR_Value = COR_OFF;
 	pCOR_Value = COR_Value;
@@ -1147,12 +1098,12 @@ int main(int argc, char **argv)
 		printf("Error loading cfgFile: '%s'\n",cfgFile);
 
 	ParseArgs(argc,argv);
-	
+
 	// If you call this, it will not actually access the GPIO
 	// Use for testing
 //	bcm2835_set_debug(1);
 
-	
+
 	// Initialize the bcm2835 library, if this fails,
 	// then bail (exit).
 	if (!bcm2835_init())
@@ -1160,9 +1111,9 @@ int main(int argc, char **argv)
 
 	// This is normally called on startup by the Arduino bootloader,
 	// so we have to do it here.
-	setup();	
+	setup();
 
-	// This is the normal operating mode of an Arduino, again we 
+	// This is the normal operating mode of an Arduino, again we
 	// have to provide this functionality. Note, this runs forever
 	// we might add a stop feature at some time to allow the controller
 	// to exit and restart.
